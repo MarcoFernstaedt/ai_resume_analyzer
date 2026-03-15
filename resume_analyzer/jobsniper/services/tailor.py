@@ -62,7 +62,7 @@ def generate_cover_letter(
         raise RuntimeError('No resume text available. Add your resume to data/resume.txt')
 
     tailor_cfg = (config or {}).get('tailor', {})
-    model = tailor_cfg.get('model', 'claude-sonnet-4-20250514')
+    model = tailor_cfg.get('model', 'claude-sonnet-4-6')
     max_tokens = tailor_cfg.get('max_tokens', 600)
 
     description = job.get('description', '') or ''

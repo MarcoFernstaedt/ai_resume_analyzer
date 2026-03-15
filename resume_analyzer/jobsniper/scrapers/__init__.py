@@ -1,10 +1,6 @@
-"""Scraper registry — maps source name to scraper class."""
+"""Scraper registry — Phase 1: Indeed only."""
 from .indeed import IndeedScraper
-from .linkedin import LinkedInScraper
-from .wellfound import WellfoundScraper
 
 SCRAPERS = {
     'indeed': IndeedScraper,
-    'linkedin': LinkedInScraper,
-    'wellfound': WellfoundScraper,
 }

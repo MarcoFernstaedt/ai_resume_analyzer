@@ -96,18 +96,16 @@ def score_job(job: dict, profile: dict) -> float:
     else:
         scores['remote_match'] = 0.7  # neutral
 
-    # 5. Exclude keywords — any match penalises to 0
+    # 5. Exclude keywords — title match = hard reject (return 0); body match = soft penalty
     excludes: list[str] = profile.get('exclude_keywords', [])
     if excludes:
-        found_excludes = _any_word_match(full_text, excludes)
-        # Check title too
-        title_excludes = [e for e in excludes if e.lower() in title.lower()]
-        all_found = set(found_excludes + title_excludes)
-        if all_found:
-            logger.debug(f'Exclude keywords found in job "{title}": {all_found}')
-            scores['no_excludes'] = 0.0
-        else:
-            scores['no_excludes'] = 1.0
+        title_excludes = [e for e in excludes if _word_match(title, e)]
+        if title_excludes:
+            # Exclude keyword in job title → immediate disqualification
+            logger.debug(f'Title excludes matched for "{title}": {title_excludes}')
+            return 0.0
+        body_excludes = _any_word_match(description, excludes)
+        scores['no_excludes'] = 0.0 if body_excludes else 1.0
     else:
         scores['no_excludes'] = 1.0
 
@@ -128,9 +126,8 @@ def score_job(job: dict, profile: dict) -> float:
     total = round(min(1.0, max(0.0, total)), 4)
 
     logger.debug(
-        f'Scored "{title}" at {company}: {total:.2f} — '
-        f'{", ".join(f"{k}={v:.2f}" for k, v in scores.items())}'
-        .replace('{company}', job.get('company', '?'))
+        f'Scored "{title}" at {job.get("company", "?")} : {total:.2f} — '
+        + ', '.join(f'{k}={v:.2f}' for k, v in scores.items())
     )
     return total
 

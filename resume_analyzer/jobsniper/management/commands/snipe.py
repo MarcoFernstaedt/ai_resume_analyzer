@@ -41,9 +41,9 @@ class Command(BaseCommand):
         subparsers = parser.add_subparsers(dest='action', required=True)
 
         # scrape
-        scrape_p = subparsers.add_parser('scrape', help='Scrape job boards')
-        scrape_p.add_argument('--source', choices=['indeed', 'linkedin', 'wellfound'],
-                              help='Scrape a single source only')
+        scrape_p = subparsers.add_parser('scrape', help='Scrape Indeed job listings')
+        scrape_p.add_argument('--source', choices=['indeed'],
+                              help='Source to scrape (only indeed supported in Phase 1)')
 
         # filter
         subparsers.add_parser('filter', help='Score and filter all new jobs')
