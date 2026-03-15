@@ -7,11 +7,17 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-j1-$(zbxg^%2zakwvms0!hgb@v9d$9$w)op6gz2l7y7c^*d!0w')
+# SECURITY: SECRET_KEY must be set via environment variable in production.
+# Never commit a real secret key. The fallback below is only for local dev.
+_default_secret = 'local-dev-only-change-in-production-!!unsecure!!'
+SECRET_KEY = os.environ.get('SECRET_KEY', _default_secret)
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# In production set ALLOWED_HOSTS to your actual domain(s).
+# Example: ALLOWED_HOSTS=mysite.com,www.mysite.com
+_raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()] or (['*'] if DEBUG else ['localhost'])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -85,6 +91,28 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ── Security headers (enforced in production; no-op in DEBUG) ──────────────
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Upgrade HTTP → HTTPS only when not in local dev
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 0 if DEBUG else 31536000  # 1 year in production
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
+
+# Cookies
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = not DEBUG   # HTTPS-only in production
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 2 weeks
+
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Auth
 LOGIN_URL = '/auth/login/'

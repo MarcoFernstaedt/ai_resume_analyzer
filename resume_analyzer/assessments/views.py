@@ -2,6 +2,7 @@ import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
 
@@ -23,11 +24,13 @@ COMMON_TECH = [
 ]
 
 
+@login_required
 def assessment_list(request):
     assessments = SkillAssessment.objects.all()
     return render(request, 'assessments/list.html', {'assessments': assessments})
 
 
+@login_required
 def assessment_start(request):
     if request.method == 'POST':
         tech_stack = request.POST.getlist('tech_stack')
@@ -71,6 +74,7 @@ def assessment_start(request):
     return render(request, 'assessments/start.html', {'tech_list': COMMON_TECH, 'resumes': resumes})
 
 
+@login_required
 def assessment_take(request, pk):
     assessment = get_object_or_404(SkillAssessment, pk=pk)
     questions = assessment.questions.all()
@@ -115,6 +119,7 @@ def assessment_take(request, pk):
     return render(request, 'assessments/take.html', {'assessment': assessment, 'questions': questions})
 
 
+@login_required
 def assessment_result(request, pk):
     assessment = get_object_or_404(SkillAssessment, pk=pk)
     questions = assessment.questions.all()
@@ -130,6 +135,7 @@ def assessment_result(request, pk):
     return render(request, 'assessments/result.html', context)
 
 
+@login_required
 def assessment_detail(request, pk):
     assessment = get_object_or_404(SkillAssessment, pk=pk)
     if assessment.status == 'in_progress':

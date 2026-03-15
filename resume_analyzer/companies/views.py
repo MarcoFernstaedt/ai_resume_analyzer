@@ -1,9 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Company, JobApplication, InterviewNote
 from resumes.services.ai_analyzer import research_company
 
 
+@login_required
 def company_list(request):
     status_filter = request.GET.get('status', '')
     companies = Company.objects.all()
@@ -22,6 +24,7 @@ def company_list(request):
     })
 
 
+@login_required
 def company_create(request):
     if request.method == 'POST':
         tech_raw = request.POST.get('tech_stack', '')
@@ -61,6 +64,7 @@ def company_create(request):
     })
 
 
+@login_required
 def company_detail(request, pk):
     company = get_object_or_404(Company, pk=pk)
     applications = company.applications.all()
@@ -70,6 +74,7 @@ def company_detail(request, pk):
     })
 
 
+@login_required
 def company_edit(request, pk):
     company = get_object_or_404(Company, pk=pk)
     if request.method == 'POST':
@@ -97,6 +102,7 @@ def company_edit(request, pk):
     })
 
 
+@login_required
 def company_delete(request, pk):
     company = get_object_or_404(Company, pk=pk)
     if request.method == 'POST':
@@ -106,6 +112,7 @@ def company_delete(request, pk):
     return render(request, 'companies/confirm_delete.html', {'company': company})
 
 
+@login_required
 def application_create(request, company_pk):
     company = get_object_or_404(Company, pk=company_pk)
     if request.method == 'POST':
@@ -144,6 +151,7 @@ def application_create(request, company_pk):
     })
 
 
+@login_required
 def application_detail(request, pk):
     application = get_object_or_404(JobApplication, pk=pk)
     return render(request, 'companies/application_detail.html', {'application': application})

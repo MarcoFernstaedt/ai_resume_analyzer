@@ -8,6 +8,7 @@ from pathlib import Path
 
 import yaml
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
@@ -39,6 +40,7 @@ def _ensure_db():
 
 # ── Queue ─────────────────────────────────────────────────────────────────────
 
+@login_required
 def queue_view(request):
     _ensure_db()
     from jobsniper.services.store import get_jobs, get_stats
@@ -89,6 +91,7 @@ def queue_view(request):
 
 # ── Detail ────────────────────────────────────────────────────────────────────
 
+@login_required
 def detail_view(request, job_id: int):
     _ensure_db()
     from jobsniper.services.store import get_job, get_latest_cover_letter
@@ -107,6 +110,7 @@ def detail_view(request, job_id: int):
 
 # ── Actions ───────────────────────────────────────────────────────────────────
 
+@login_required
 @require_http_methods(['POST'])
 def apply_view(request, job_id: int):
     from jobsniper.services.store import update_status, log_application, get_job
@@ -123,6 +127,7 @@ def apply_view(request, job_id: int):
     return redirect('snipe_queue')
 
 
+@login_required
 @require_http_methods(['POST'])
 def skip_view(request, job_id: int):
     from jobsniper.services.store import update_status, get_job
@@ -136,6 +141,7 @@ def skip_view(request, job_id: int):
     return redirect('snipe_queue')
 
 
+@login_required
 @require_http_methods(['POST'])
 def regenerate_view(request, job_id: int):
     from jobsniper.services.store import get_job
@@ -163,6 +169,7 @@ def regenerate_view(request, job_id: int):
 
 # ── Stats ──────────────────────────────────────────────────────────────────────
 
+@login_required
 def stats_view(request):
     _ensure_db()
     from jobsniper.services.store import get_stats
@@ -183,6 +190,7 @@ def stats_view(request):
 
 # ── API: quick scrape trigger (async background) ───────────────────────────────
 
+@login_required
 @require_http_methods(['POST'])
 def trigger_pipeline(request):
     """Kick off filter+tailor for already-scraped 'new' jobs (sync, quick)."""

@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .models import Resume, ResumeSection, JobMatch
@@ -12,6 +12,7 @@ from .services.ai_analyzer import analyze_resume, match_job_description
 from .services.exporter import export_harvard_template, export_google_template, export_plain_text
 
 
+@login_required
 def dashboard(request):
     resumes = Resume.objects.all()[:5]
     total_resumes = Resume.objects.count()
@@ -30,6 +31,7 @@ def dashboard(request):
     return render(request, 'dashboard.html', context)
 
 
+@login_required
 def resume_upload(request):
     if request.method == 'POST':
         uploaded_file = request.FILES.get('resume_file')
@@ -76,11 +78,13 @@ def resume_upload(request):
     return render(request, 'resumes/upload.html')
 
 
+@login_required
 def resume_list(request):
     resumes = Resume.objects.all()
     return render(request, 'resumes/list.html', {'resumes': resumes})
 
 
+@login_required
 def resume_detail(request, pk):
     resume = get_object_or_404(Resume, pk=pk)
     feedback = resume.feedback or {}
@@ -95,6 +99,7 @@ def resume_detail(request, pk):
     return render(request, 'resumes/detail.html', context)
 
 
+@login_required
 def resume_delete(request, pk):
     resume = get_object_or_404(Resume, pk=pk)
     if request.method == 'POST':
@@ -104,6 +109,7 @@ def resume_delete(request, pk):
     return render(request, 'resumes/confirm_delete.html', {'resume': resume})
 
 
+@login_required
 @require_http_methods(['POST'])
 def job_match(request, pk):
     resume = get_object_or_404(Resume, pk=pk)
@@ -127,6 +133,7 @@ def job_match(request, pk):
     return redirect('resume_detail', pk=pk)
 
 
+@login_required
 def resume_builder(request):
     """Interactive resume builder with AI guidance."""
     resume_id = request.GET.get('resume_id')
