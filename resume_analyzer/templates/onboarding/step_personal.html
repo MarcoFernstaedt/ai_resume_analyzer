@@ -1,0 +1,44 @@
+{% extends 'onboarding/base_onboarding.html' %}
+
+{% block step_content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+    <div class="form-group {% if form.display_name.errors %}field-error{% endif %}">
+      <label class="form-label" for="{{ form.display_name.id_for_label }}">Display Name *</label>
+      {{ form.display_name }}
+      {% if form.display_name.errors %}<ul class="errorlist">{% for e in form.display_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="form-group {% if form.phone.errors %}field-error{% endif %}">
+      <label class="form-label" for="{{ form.phone.id_for_label }}">Phone</label>
+      {{ form.phone }}
+    </div>
+  </div>
+
+  <div class="form-group {% if form.location.errors %}field-error{% endif %}">
+    <label class="form-label" for="{{ form.location.id_for_label }}">Location</label>
+    {{ form.location }}
+    <small style="color:var(--text-muted);font-size:0.78rem;">City, State or Remote</small>
+  </div>
+
+  <div class="form-group {% if form.linkedin_url.errors %}field-error{% endif %}">
+    <label class="form-label" for="{{ form.linkedin_url.id_for_label }}">LinkedIn URL</label>
+    {{ form.linkedin_url }}
+    {% if form.linkedin_url.errors %}<ul class="errorlist">{% for e in form.linkedin_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+
+  <div class="form-group {% if form.github_url.errors %}field-error{% endif %}">
+    <label class="form-label" for="{{ form.github_url.id_for_label }}">GitHub URL</label>
+    {{ form.github_url }}
+    {% if form.github_url.errors %}<ul class="errorlist">{% for e in form.github_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+
+  <div class="ob-actions">
+    <span style="color:var(--text-muted);font-size:0.82rem;font-family:var(--font-mono);">* required</span>
+    <button type="submit" class="btn btn-primary">
+      Continue <span aria-hidden="true">→</span>
+    </button>
+  </div>
+</form>
+{% endblock %}

@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'assessments',
     'companies',
     'jobsniper',
+    'onboarding',
 ]
 
 MIDDLEWARE = [
@@ -34,6 +35,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'onboarding.middleware.OnboardingMiddleware',
 ]
 
 ROOT_URLCONF = 'resume_analyzer.urls'
@@ -83,6 +85,14 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Auth
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/auth/login/'
+
+# Ensure onboarding URLs work without 'onboarding/' prefix
+# Auth is under /auth/; onboarding wizard is also under /auth/step/
 
 # Claude AI API
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')

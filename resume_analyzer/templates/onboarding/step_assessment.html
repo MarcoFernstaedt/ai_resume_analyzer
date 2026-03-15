@@ -1,0 +1,134 @@
+{% extends 'onboarding/base_onboarding.html' %}
+
+{% block extra_css %}
+<style>
+  .question-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    transition: border-color 0.2s;
+  }
+  .question-card:focus-within { border-color: var(--accent-blue); }
+  .question-number {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-blue);
+    margin-bottom: 0.5rem;
+  }
+  .question-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+  /* Multiple choice */
+  .mc-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .mc-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .mc-option:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+  .mc-option input[type="radio"] { accent-color: var(--accent-blue); }
+  .mc-option:has(input:checked) {
+    border-color: var(--accent-blue);
+    background: rgba(88,166,255,0.08);
+    color: var(--text-primary);
+  }
+  /* Open-ended */
+  .open-answer {
+    width: 100%;
+    min-height: 80px;
+    resize: vertical;
+  }
+  .stack-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+</style>
+{% endblock %}
+
+{% block step_content %}
+<div class="stack-chips" aria-label="Your tech stack being assessed">
+  {% for skill in tech_stack %}
+  <span class="badge badge-blue" style="font-size:0.78rem;">{{ skill }}</span>
+  {% endfor %}
+</div>
+
+<p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.5rem;line-height:1.6;">
+  Answer these <strong style="color:var(--text-primary);">{{ questions|length }} questions</strong> honestly —
+  there's no penalty for gaps. This calibrates how the AI tailors opportunities for you.
+</p>
+
+{% if questions %}
+<form method="post" id="assessment-form">
+  {% csrf_token %}
+
+  {% for question in questions %}
+  <div class="question-card" role="group" aria-labelledby="q-label-{{ forloop.counter }}">
+    <div class="question-number">Question {{ forloop.counter }} of {{ questions|length }}</div>
+    <div class="question-text" id="q-label-{{ forloop.counter }}">{{ question.question_text }}</div>
+
+    {% if question.question_type == 'multiple_choice' and question.options %}
+      <div class="mc-options">
+        {% for opt in question.options %}
+        <label class="mc-option">
+          <input type="radio" name="answer_{{ question.pk }}" value="{{ opt }}" required>
+          {{ opt }}
+        </label>
+        {% endfor %}
+      </div>
+    {% else %}
+      <textarea name="answer_{{ question.pk }}"
+                class="form-input open-answer"
+                placeholder="Type your answer here…"
+                aria-label="Your answer to: {{ question.question_text }}"
+                rows="3"></textarea>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <div class="ob-actions">
+    <span style="color:var(--text-muted);font-size:0.82rem;font-family:var(--font-mono);">claude evaluates each answer</span>
+    <button type="submit" class="btn btn-primary" id="submit-btn">
+      <span aria-hidden="true">🧪</span> Submit Assessment
+    </button>
+  </div>
+</form>
+{% else %}
+<div style="text-align:center;padding:2rem 0;">
+  <div style="font-size:2rem;margin-bottom:0.75rem;">⏳</div>
+  <p style="color:var(--text-muted);">Generating your skill assessment with Claude AI…</p>
+  <p style="font-size:0.82rem;color:var(--text-muted);">This usually takes a few seconds.</p>
+  <meta http-equiv="refresh" content="3">
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const form = document.getElementById('assessment-form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Claude is grading… ⏳';
+    });
+  }
+</script>
+{% endblock %}

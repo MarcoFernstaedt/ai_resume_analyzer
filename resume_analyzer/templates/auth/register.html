@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create your DevResume AI account">
+  <meta name="theme-color" content="#0d1117">
+  <title>Create Account — DevResume AI</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-primary);
+      position: relative;
+      overflow: hidden;
+      padding: 2rem 1rem;
+    }
+    .auth-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(88,166,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 70%, rgba(201,168,76,0.07) 0%, transparent 60%);
+    }
+    .auth-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .auth-logo .logo-icon-lg {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .auth-logo h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0 0 0.25rem;
+    }
+    .auth-logo p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+    }
+    .auth-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    .auth-card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .auth-footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+    .auth-footer a:hover { text-decoration: underline; }
+    .errorlist {
+      list-style: none;
+      padding: 0;
+      margin: 0.3rem 0 0;
+      color: var(--accent-red, #f85149);
+      font-size: 0.8rem;
+    }
+    .field-error .form-input {
+      border-color: var(--accent-red, #f85149);
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    @media (max-width: 480px) {
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <div class="auth-page" id="auth-bg-mount">
+    <div class="auth-bg" aria-hidden="true"></div>
+
+    <div class="auth-container" id="main-content">
+      <div class="auth-logo">
+        <span class="logo-icon-lg" aria-hidden="true">⚡</span>
+        <h1>Dev<span class="accent">Resume</span> AI</h1>
+        <p>// your dev career companion</p>
+      </div>
+
+      <div class="auth-card">
+        <h2>Create your account</h2>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}" style="margin-bottom:1rem;">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="form-row-2">
+            <div class="form-group {% if form.first_name.errors %}field-error{% endif %}">
+              <label class="form-label" for="id_first_name">First Name</label>
+              <input type="text" name="first_name" id="id_first_name"
+                     class="form-input" placeholder="Marco"
+                     value="{{ form.first_name.value|default:'' }}"
+                     autocomplete="given-name" required>
+              {% if form.first_name.errors %}<ul class="errorlist">{% for e in form.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            <div class="form-group {% if form.last_name.errors %}field-error{% endif %}">
+              <label class="form-label" for="id_last_name">Last Name</label>
+              <input type="text" name="last_name" id="id_last_name"
+                     class="form-input" placeholder="Fernstaedt"
+                     value="{{ form.last_name.value|default:'' }}"
+                     autocomplete="family-name">
+              {% if form.last_name.errors %}<ul class="errorlist">{% for e in form.last_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-group {% if form.email.errors %}field-error{% endif %}">
+            <label class="form-label" for="id_email">Email</label>
+            <input type="email" name="email" id="id_email"
+                   class="form-input" placeholder="you@example.com"
+                   value="{{ form.email.value|default:'' }}"
+                   autocomplete="email" required>
+            {% if form.email.errors %}<ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="form-group {% if form.username.errors %}field-error{% endif %}">
+            <label class="form-label" for="id_username">Username</label>
+            <input type="text" name="username" id="id_username"
+                   class="form-input" placeholder="devuser42"
+                   value="{{ form.username.value|default:'' }}"
+                   autocomplete="username" required>
+            {% if form.username.errors %}<ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="form-group {% if form.password1.errors %}field-error{% endif %}">
+            <label class="form-label" for="id_password1">Password</label>
+            <input type="password" name="password1" id="id_password1"
+                   class="form-input" placeholder="Min. 8 characters"
+                   autocomplete="new-password" required>
+            {% if form.password1.errors %}<ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="form-group {% if form.password2.errors %}field-error{% endif %}">
+            <label class="form-label" for="id_password2">Confirm Password</label>
+            <input type="password" name="password2" id="id_password2"
+                   class="form-input" placeholder="Same password again"
+                   autocomplete="new-password" required>
+            {% if form.password2.errors %}<ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-error" style="margin-bottom:1rem;">
+              {% for e in form.non_field_errors %}{{ e }}{% endfor %}
+            </div>
+          {% endif %}
+
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;" id="register-btn">
+            <span aria-hidden="true">⚡</span> Create Account &amp; Start Onboarding
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          Already have an account? <a href="{% url 'login' %}">Sign in</a>
+        </div>
+      </div>
+
+      <p style="text-align:center;color:var(--text-muted);font-size:0.75rem;margin-top:1rem;font-family:var(--font-mono);">
+        // powered by claude-sonnet-4-6
+      </p>
+    </div>
+  </div>
+
+  {% load static %}
+  <script src="{% static 'js/three-bg.js' %}"></script>
+  <script>
+    ThreeBG.mount('#auth-bg-mount');
+
+    // Loading state on submit
+    document.querySelector('form').addEventListener('submit', function () {
+      const btn = document.getElementById('register-btn');
+      btn.disabled = true;
+      btn.textContent = 'Creating account…';
+    });
+  </script>
+</body>
+</html>

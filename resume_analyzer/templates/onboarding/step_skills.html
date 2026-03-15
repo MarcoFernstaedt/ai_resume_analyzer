@@ -1,0 +1,161 @@
+{% extends 'onboarding/base_onboarding.html' %}
+{% load resume_tags %}
+
+{% block extra_css %}
+<style>
+  .skill-category { margin-bottom: 1.5rem; }
+  .skill-category-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  .skill-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .skill-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    user-select: none;
+  }
+  .skill-chip:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+  .skill-chip.selected {
+    border-color: var(--accent-blue);
+    background: rgba(88,166,255,0.12);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .skill-chip input { display: none; }
+  .level-row {
+    display: none;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.4rem;
+    padding: 0.6rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    align-items: center;
+  }
+  .level-row.visible { display: flex; }
+  .level-label { color: var(--text-muted); margin-right: 0.25rem; font-weight: 500; }
+  .level-btn {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: none;
+    cursor: pointer;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+  .level-btn:hover { border-color: var(--accent-blue); }
+  .level-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+  .selected-count { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-blue); margin-bottom: 1rem; }
+</style>
+{% endblock %}
+
+{% block step_content %}
+<form method="post" id="skills-form">
+  {% csrf_token %}
+  <div class="selected-count" aria-live="polite" id="count-label">
+    {{ selected_skills|length }} skill{{ selected_skills|length|pluralize }} selected
+  </div>
+
+  {% for category, skills in skill_categories.items %}
+  <div class="skill-category">
+    <div class="skill-category-name">{{ category }}</div>
+    <div class="skill-grid">
+      {% for skill in skills %}
+      <label class="skill-chip {% if skill in selected_skills %}selected{% endif %}" data-skill="{{ skill }}">
+        <input type="checkbox" name="skills" value="{{ skill }}"
+               {% if skill in selected_skills %}checked{% endif %}>
+        {{ skill }}
+      </label>
+      {% endfor %}
+    </div>
+    {% for skill in skills %}
+    <div class="level-row {% if skill in selected_skills %}visible{% endif %}"
+         id="level-row-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+      <span class="level-label">{{ skill }}:</span>
+      {% for lvl in "beginner,intermediate,advanced"|split:"," %}
+      <button type="button" class="level-btn {% if skill_levels|get_item:skill == lvl %}active{% elif forloop.first and not skill_levels|get_item:skill %}active{% endif %}"
+              data-skill="{{ skill }}" data-level="{{ lvl }}">{{ lvl }}</button>
+      {% endfor %}
+      <input type="hidden" name="level_{{ skill }}" id="level-input-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+             value="{{ skill_levels|get_item:skill|default:'beginner' }}">
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  <div class="ob-actions">
+    <span style="color:var(--text-muted);font-size:0.82rem;">Pick everything you know</span>
+    <button type="submit" class="btn btn-primary">
+      Continue <span aria-hidden="true">→</span>
+    </button>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const chips = document.querySelectorAll('.skill-chip');
+  const countLabel = document.getElementById('count-label');
+
+  function toSlug(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function updateCount() {
+    const n = document.querySelectorAll('.skill-chip.selected').length;
+    countLabel.textContent = n + ' skill' + (n !== 1 ? 's' : '') + ' selected';
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', function (e) {
+      if (e.target.classList.contains('level-btn')) return;
+      const input = chip.querySelector('input[type="checkbox"]');
+      input.checked = !input.checked;
+      chip.classList.toggle('selected', input.checked);
+      // Find next sibling level rows — look by skill name match
+      const skill = chip.dataset.skill;
+      document.querySelectorAll('.level-row').forEach(row => {
+        const inp = row.querySelector('input[type="hidden"]');
+        if (inp && inp.name === 'level_' + skill) {
+          row.classList.toggle('visible', input.checked);
+        }
+      });
+      updateCount();
+    });
+  });
+
+  document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const skill = btn.dataset.skill;
+      const level = btn.dataset.level;
+      const row = btn.closest('.level-row');
+      row.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const inp = row.querySelector('input[type="hidden"]');
+      if (inp) inp.value = level;
+    });
+  });
+
+  updateCount();
+}());
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'onboarding/base_onboarding.html' %}
+
+{% block extra_css %}
+<style>
+  .complete-center { text-align: center; }
+  .confetti-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(88,166,255,0.15), rgba(201,168,76,0.15));
+    border: 2px solid rgba(88,166,255,0.3);
+    font-size: 2.5rem;
+    margin: 0 auto 1.5rem;
+    animation: ring-pulse 2s ease-in-out infinite;
+  }
+  @keyframes ring-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(88,166,255,0.3); }
+    50% { box-shadow: 0 0 0 12px rgba(88,166,255,0); }
+  }
+  .level-badge {
+    display: inline-block;
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: capitalize;
+    margin-bottom: 1.5rem;
+  }
+  .level-badge.junior { background: rgba(63,185,80,0.15); color: #3fb950; border: 1px solid rgba(63,185,80,0.3); }
+  .level-badge.mid { background: rgba(88,166,255,0.15); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3); }
+  .level-badge.senior { background: rgba(201,168,76,0.15); color: #C9A84C; border: 1px solid rgba(201,168,76,0.3); }
+  .quick-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .quick-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.18s ease;
+    background: var(--bg-tertiary);
+  }
+  .quick-link:hover { border-color: var(--accent-blue); color: var(--text-primary); transform: translateY(-2px); }
+  .quick-link .ql-icon { font-size: 1.2rem; }
+  @media (max-width: 480px) { .quick-links { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block step_content %}
+<div class="complete-center">
+  <div class="confetti-ring" aria-hidden="true">🚀</div>
+
+  <h2 style="font-size:1.5rem;font-weight:800;margin:0 0 0.4rem;">Profile Complete!</h2>
+  <p style="color:var(--text-muted);margin-bottom:1.25rem;font-size:0.9rem;">
+    Your AI-powered career toolkit is ready. Here's what we know about you:
+  </p>
+
+  {% if profile.onboarding_assessment_level %}
+  <div class="level-badge {{ profile.onboarding_assessment_level }}">
+    Assessed Level: {{ profile.onboarding_assessment_level }}
+  </div>
+  {% endif %}
+
+  <div style="text-align:left;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.85rem;">
+      {% if profile.display_name %}
+      <div>
+        <span style="color:var(--text-muted);">Name</span><br>
+        <strong>{{ profile.display_name }}</strong>
+      </div>
+      {% endif %}
+      {% if profile.target_titles %}
+      <div>
+        <span style="color:var(--text-muted);">Target Role</span><br>
+        <strong>{{ profile.target_titles.0 }}{% if profile.target_titles|length > 1 %} +{{ profile.target_titles|length|add:"-1" }} more{% endif %}</strong>
+      </div>
+      {% endif %}
+      {% if profile.known_skills %}
+      <div>
+        <span style="color:var(--text-muted);">Skills</span><br>
+        <strong>{{ profile.known_skills|length }} in your stack</strong>
+      </div>
+      {% endif %}
+      <div>
+        <span style="color:var(--text-muted);">Remote Preference</span><br>
+        <strong>{{ profile.get_remote_preference_display }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <a href="{% url 'dashboard' %}" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1.25rem;font-size:1rem;padding:0.9rem;">
+    <span aria-hidden="true">⚡</span> Enter Dashboard
+  </a>
+
+  <div class="quick-links">
+    <a href="{% url 'resume_upload' %}" class="quick-link">
+      <span class="ql-icon" aria-hidden="true">📄</span>
+      <span>Analyze Resume</span>
+    </a>
+    <a href="{% url 'snipe_queue' %}" class="quick-link">
+      <span class="ql-icon" aria-hidden="true">🎯</span>
+      <span>JobSniper Queue</span>
+    </a>
+    <a href="{% url 'assessment_start' %}" class="quick-link">
+      <span class="ql-icon" aria-hidden="true">🧪</span>
+      <span>Full Skill Test</span>
+    </a>
+    <a href="{% url 'company_list' %}" class="quick-link">
+      <span class="ql-icon" aria-hidden="true">🏢</span>
+      <span>Research Companies</span>
+    </a>
+  </div>
+</div>
+{% endblock %}

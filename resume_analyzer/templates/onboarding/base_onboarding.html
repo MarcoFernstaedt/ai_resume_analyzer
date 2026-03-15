@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_desc %}Set up your DevResume AI profile{% endblock %}">
+  <meta name="theme-color" content="#0d1117">
+  <title>{% block title %}{{ step_title }}{% endblock %} — DevResume AI Setup</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <style>
+    /* ── Onboarding Layout ──────────────────────────────── */
+    .ob-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-primary);
+      position: relative;
+      overflow-x: hidden;
+    }
+    .ob-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .ob-topbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,17,23,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .ob-logo {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+    .ob-logo .accent { color: var(--accent-blue); }
+    .ob-step-label {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Progress bar ──────────────────────────────────── */
+    .ob-progress-track {
+      position: relative;
+      z-index: 10;
+      height: 3px;
+      background: var(--border);
+    }
+    .ob-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #58a6ff, #C9A84C);
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Step dots ─────────────────────────────────────── */
+    .ob-step-dots {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(13,17,23,0.6);
+      backdrop-filter: blur(8px);
+    }
+    .ob-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+    .ob-dot.done { background: var(--accent-blue); opacity: 0.6; }
+    .ob-dot.active {
+      background: var(--accent-blue);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    /* ── Content ───────────────────────────────────────── */
+    .ob-main {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2.5rem 1rem 4rem;
+    }
+    .ob-card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      animation: ob-slide-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+    @keyframes ob-slide-in {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+    .ob-step-icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 0.75rem;
+      line-height: 1;
+    }
+    .ob-step-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0 0 0.4rem;
+      line-height: 1.15;
+    }
+    .ob-step-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin: 0 0 2rem;
+      font-family: var(--font-mono);
+    }
+    .ob-step-subtitle::before { content: '// '; opacity: 0.5; }
+
+    /* ── Actions row ───────────────────────────────────── */
+    .ob-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 2rem;
+      gap: 1rem;
+    }
+    .ob-actions .btn { min-width: 120px; justify-content: center; }
+
+    /* ── Misc form adjustments ─────────────────────────── */
+    .errorlist { list-style: none; padding: 0; margin: 0.3rem 0 0; color: #f85149; font-size: 0.8rem; }
+    .field-error .form-input,
+    .field-error .form-select { border-color: #f85149; }
+
+    @media (max-width: 600px) {
+      .ob-card { padding: 1.5rem; border-radius: 16px; }
+      .ob-step-title { font-size: 1.4rem; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <a href="#ob-main" class="skip-link">Skip to main content</a>
+
+  <div class="ob-page">
+    <!-- 3D particle background -->
+    <div class="ob-bg" id="ob-bg-mount" aria-hidden="true"></div>
+
+    <!-- Top bar -->
+    <header class="ob-topbar">
+      <a href="{% url 'dashboard' %}" class="ob-logo" aria-label="DevResume AI home">
+        Dev<span class="accent">Resume</span> AI
+      </a>
+      <span class="ob-step-label" aria-live="polite">
+        Step {{ step_number }} of {{ step_total }} — {{ step_title }}
+      </span>
+      <form method="post" action="{% url 'logout' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm" style="font-size:0.78rem;">
+          Sign out
+        </button>
+      </form>
+    </header>
+
+    <!-- Progress bar -->
+    <div class="ob-progress-track" role="progressbar" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100" aria-label="Onboarding progress">
+      <div class="ob-progress-fill" style="width:{{ progress_percent }}%;"></div>
+    </div>
+
+    <!-- Step dots -->
+    <div class="ob-step-dots" aria-hidden="true">
+      {% for s in step_order %}
+        {% if forloop.counter < step_number %}
+          <div class="ob-dot done" title="{{ s }}"></div>
+        {% elif forloop.counter == step_number %}
+          <div class="ob-dot active" title="{{ s }}"></div>
+        {% else %}
+          <div class="ob-dot" title="{{ s }}"></div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Main content -->
+    <main class="ob-main" id="ob-main" role="main">
+      <div class="ob-card">
+        <span class="ob-step-icon" aria-hidden="true">{{ step_icon }}</span>
+        <h1 class="ob-step-title">{{ step_title }}</h1>
+        <p class="ob-step-subtitle">{{ step_subtitle }}</p>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}" style="margin-bottom:1rem;" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        {% block step_content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+  {% load static %}
+  <script src="{% static 'js/three-bg.js' %}"></script>
+  <script>
+    ThreeBG.mount('#ob-bg-mount');
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

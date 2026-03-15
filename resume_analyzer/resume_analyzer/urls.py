@@ -7,6 +7,7 @@ from resumes.views import dashboard
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', dashboard, name='dashboard'),
+    path('auth/', include('onboarding.urls')),
     path('resumes/', include('resumes.urls')),
     path('assessments/', include('assessments.urls')),
     path('companies/', include('companies.urls')),

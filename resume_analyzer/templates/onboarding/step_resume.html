@@ -1,0 +1,152 @@
+{% extends 'onboarding/base_onboarding.html' %}
+
+{% block extra_css %}
+<style>
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 1.5rem;
+    background: var(--bg-tertiary);
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent-blue);
+    background: rgba(88,166,255,0.05);
+  }
+  .upload-icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+  .upload-zone h3 { font-size: 1rem; font-weight: 600; margin: 0 0 0.4rem; }
+  .upload-zone p { color: var(--text-muted); font-size: 0.83rem; margin: 0; }
+  .upload-zone input[type="file"] { display: none; }
+  .file-name {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--accent-green);
+    margin-top: 0.75rem;
+  }
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.83rem;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .skip-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: none;
+    transition: all 0.18s;
+  }
+  .skip-btn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
+</style>
+{% endblock %}
+
+{% block step_content %}
+<form method="post" enctype="multipart/form-data" id="resume-form">
+  {% csrf_token %}
+
+  <div class="upload-zone" id="drop-zone" role="button" tabindex="0"
+       aria-label="Upload resume file. Click or drag and drop a PDF or Word document.">
+    <span class="upload-icon" aria-hidden="true">📄</span>
+    <h3>Drop your resume here</h3>
+    <p>PDF or Word (.docx) — up to 10MB</p>
+    <p style="margin-top:0.5rem;">
+      <label for="id_resume_file" class="btn btn-ghost btn-sm" style="cursor:pointer;display:inline-flex;">
+        Browse files
+      </label>
+    </p>
+    <input type="file" name="resume_file" id="id_resume_file"
+           accept=".pdf,.doc,.docx"
+           aria-label="Select resume file">
+    <div class="file-name" id="file-name" aria-live="polite"></div>
+  </div>
+
+  <p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:1rem;">
+    <span aria-hidden="true">✓</span> Your resume will be analyzed by Claude AI.
+    Skills found will be merged with your profile automatically.
+  </p>
+
+  <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="upload-btn">
+    <span aria-hidden="true">⬆</span> Upload &amp; Analyze
+  </button>
+
+  <div class="divider">or</div>
+
+  <button type="submit" class="skip-btn" name="skip" value="1"
+          aria-label="Skip resume upload and continue to skill assessment">
+    Skip for now — I'll upload later
+  </button>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const zone  = document.getElementById('drop-zone');
+  const input = document.getElementById('id_resume_file');
+  const label = document.getElementById('file-name');
+  const btn   = document.getElementById('upload-btn');
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (file) {
+      label.textContent = '✓ ' + file.name;
+      label.style.display = 'block';
+      btn.textContent = 'Analyze "' + file.name + '"';
+    }
+  });
+
+  zone.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') {
+      input.click();
+    }
+  });
+
+  zone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+  });
+
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      label.textContent = '✓ ' + file.name;
+      label.style.display = 'block';
+      btn.textContent = 'Analyze "' + file.name + '"';
+    }
+  });
+
+  document.getElementById('resume-form').addEventListener('submit', function (e) {
+    if (!e.submitter || !e.submitter.name === 'skip') {
+      if (input.files.length > 0) {
+        btn.disabled = true;
+        btn.textContent = 'Analyzing with Claude AI…';
+      }
+    }
+  });
+}());
+</script>
+{% endblock %}

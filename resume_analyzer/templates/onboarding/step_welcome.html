@@ -1,0 +1,41 @@
+{% extends 'onboarding/base_onboarding.html' %}
+{% load resume_tags %}
+
+{% block step_content %}
+<div style="text-align:center;">
+  <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;">
+    <span class="badge badge-blue" style="font-size:0.8rem;padding:0.4rem 0.8rem;">Resume AI</span>
+    <span class="badge badge-green" style="font-size:0.8rem;padding:0.4rem 0.8rem;">Skill Tests</span>
+    <span class="badge badge-yellow" style="font-size:0.8rem;padding:0.4rem 0.8rem;">Job Sniper</span>
+    <span class="badge badge-blue" style="font-size:0.8rem;padding:0.4rem 0.8rem;">Cover Letters</span>
+  </div>
+
+  <p style="color:var(--text-secondary);line-height:1.7;margin-bottom:1.5rem;font-size:0.95rem;">
+    In the next few minutes we'll build your profile so the AI can tailor
+    every tool — resume analysis, job matching, and cover letters — specifically to you.
+  </p>
+
+  <div class="terminal" style="text-align:left;margin-bottom:2rem;">
+    <div class="terminal-header">
+      <div class="terminal-dot red" aria-hidden="true"></div>
+      <div class="terminal-dot yellow" aria-hidden="true"></div>
+      <div class="terminal-dot green" aria-hidden="true"></div>
+      <span class="terminal-title">what happens next</span>
+    </div>
+    <div class="terminal-body" style="font-size:0.8rem;">
+      <span class="prompt">1.</span> <span class="output">Tell us who you are</span><br>
+      <span class="prompt">2.</span> <span class="output">Pick your target roles &amp; stack</span><br>
+      <span class="prompt">3.</span> <span class="output">Upload or build your resume</span><br>
+      <span class="prompt">4.</span> <span class="output">Quick skill check (3 questions)</span><br>
+      <span class="prompt">5.</span> <span class="output">Dashboard unlocked ⚡</span>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:0.9rem 1.5rem;">
+      <span aria-hidden="true">⚡</span> Let's go
+    </button>
+  </form>
+</div>
+{% endblock %}

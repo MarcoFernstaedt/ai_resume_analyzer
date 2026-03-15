@@ -1,0 +1,94 @@
+{% extends 'onboarding/base_onboarding.html' %}
+
+{% block extra_css %}
+<style>
+  .title-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+  .title-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .title-chip:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+  .title-chip input[type="checkbox"] { accent-color: var(--accent-blue); width: 14px; height: 14px; }
+  .title-chip.checked { border-color: var(--accent-blue); background: rgba(88,166,255,0.08); color: var(--text-primary); }
+</style>
+{% endblock %}
+
+{% block step_content %}
+<form method="post">
+  {% csrf_token %}
+
+  <h3 style="font-size:0.9rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;">
+    Job Titles <small style="font-weight:400;text-transform:none;">(select all that apply)</small>
+  </h3>
+  <div class="title-grid" role="group" aria-label="Target job titles">
+    {% for title_val, title_label in title_choices %}
+    <label class="title-chip {% if title_val in profile.target_titles %}checked{% endif %}">
+      <input type="checkbox" name="target_titles" value="{{ title_val }}"
+             {% if title_val in profile.target_titles %}checked{% endif %}>
+      {{ title_label }}
+    </label>
+    {% endfor %}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+    <div class="form-group">
+      <label class="form-label" for="id_remote_preference">Remote Preference</label>
+      <select name="remote_preference" id="id_remote_preference" class="form-input">
+        {% for val, label in remote_choices %}
+        <option value="{{ val }}" {% if profile.remote_preference == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="id_min_salary">Min Salary ($/yr)</label>
+      <input type="number" name="min_salary" id="id_min_salary"
+             class="form-input" value="{{ profile.min_salary|default:60000 }}"
+             min="20000" max="300000" step="5000">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="id_max_experience_years">Max Experience Level (years)</label>
+    <input type="range" name="max_experience_years" id="id_max_experience_years"
+           min="0" max="10" step="1" value="{{ profile.max_experience_years|default:4 }}"
+           oninput="document.getElementById('exp-val').textContent=this.value"
+           style="width:100%;accent-color:var(--accent-blue);">
+    <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted);margin-top:0.25rem;">
+      <span>Entry</span>
+      <span id="exp-val" style="color:var(--accent-blue);font-weight:600;">{{ profile.max_experience_years|default:4 }}</span>
+      <span>10 yrs</span>
+    </div>
+  </div>
+
+  <div class="ob-actions">
+    <span></span>
+    <button type="submit" class="btn btn-primary">
+      Continue <span aria-hidden="true">→</span>
+    </button>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.title-chip').forEach(chip => {
+    chip.addEventListener('change', () => {
+      chip.classList.toggle('checked', chip.querySelector('input').checked);
+    });
+  });
+</script>
+{% endblock %}

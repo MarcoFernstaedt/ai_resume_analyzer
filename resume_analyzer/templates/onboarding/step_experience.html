@@ -1,0 +1,43 @@
+{% extends 'onboarding/base_onboarding.html' %}
+
+{% block step_content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="form-group {% if form.experience_years.errors %}field-error{% endif %}">
+    <label class="form-label" for="{{ form.experience_years.id_for_label }}">
+      Professional Experience
+    </label>
+    {{ form.experience_years }}
+    {% if form.experience_years.errors %}<ul class="errorlist">{% for e in form.experience_years.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+
+  <div class="form-group {% if form.education_level.errors %}field-error{% endif %}">
+    <label class="form-label" for="{{ form.education_level.id_for_label }}">
+      Education Level
+    </label>
+    {{ form.education_level }}
+    {% if form.education_level.errors %}<ul class="errorlist">{% for e in form.education_level.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+
+  <div class="form-group {% if form.projects_summary.errors %}field-error{% endif %}">
+    <label class="form-label" for="{{ form.projects_summary.id_for_label }}">
+      Projects &amp; Highlights
+      <span style="color:var(--text-muted);font-weight:400;">(optional)</span>
+    </label>
+    {{ form.projects_summary }}
+    <small style="color:var(--text-muted);font-size:0.78rem;">
+      Briefly describe your key projects, open source contributions, or notable achievements.
+      This helps the AI tailor your cover letters.
+    </small>
+    {% if form.projects_summary.errors %}<ul class="errorlist">{% for e in form.projects_summary.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+
+  <div class="ob-actions">
+    <span></span>
+    <button type="submit" class="btn btn-primary">
+      Continue <span aria-hidden="true">→</span>
+    </button>
+  </div>
+</form>
+{% endblock %}
