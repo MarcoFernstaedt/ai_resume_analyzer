@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Assessment{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;margin:0 auto;">
+  <div class="section-header mb-4">
+    <div>
+      <h1><span aria-hidden="true">🧪</span> Skill Assessment</h1>
+      <p style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted);">
+        Testing: {{ assessment.tech_stack|join:", " }}
+      </p>
+    </div>
+    <div class="badge badge-blue">{{ questions|length }} Questions</div>
+  </div>
+
+  <form method="post" data-loading>
+    {% csrf_token %}
+
+    {% for question in questions %}
+    <div class="question-card animate-fadeInUp" style="animation-delay: {{ forloop.counter0 }}00ms;" role="group" aria-labelledby="q-{{ question.pk }}-label">
+      <div class="question-number">
+        Question {{ forloop.counter }} / {{ questions|length }}
+        <span class="badge badge-{% if question.difficulty == 'easy' %}green{% elif question.difficulty == 'medium' %}yellow{% else %}red{% endif %}" style="margin-left:0.5rem;">
+          {{ question.difficulty|title }}
+        </span>
+        {% if question.category %}
+        <span class="badge badge-blue" style="margin-left:0.25rem;">{{ question.category.name }}</span>
+        {% endif %}
+      </div>
+      <div class="question-text" id="q-{{ question.pk }}-label">{{ question.question_text }}</div>
+
+      {% if question.question_type == 'multiple_choice' and question.options %}
+      <div class="option-list" role="radiogroup" aria-label="Answer options for question {{ forloop.counter }}">
+        {% for option in question.options %}
+        <label class="option-item">
+          <input type="radio" name="answer_{{ question.pk }}" value="{{ option }}" required aria-required="true">
+          <span>{{ option }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div>
+        <label class="form-label" for="ans-{{ question.pk }}">Your Answer</label>
+        <textarea
+          id="ans-{{ question.pk }}"
+          name="answer_{{ question.pk }}"
+          class="form-control"
+          rows="{% if question.question_type == 'coding' %}6{% else %}3{% endif %}"
+          placeholder="{% if question.question_type == 'coding' %}// Write your code here...{% else %}Type your answer here...{% endif %}"
+          {% if question.question_type == 'coding' %}style="font-family:var(--font-mono);"{% endif %}
+          required aria-required="true"></textarea>
+        {% if question.question_type == 'coding' %}
+        <p class="form-hint">Write clean, commented code. Focus on correctness first, then style.</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="card animate-fadeInUp" style="text-align:center;padding:2rem;">
+      <p style="color:var(--text-muted);margin-bottom:1rem;font-size:0.9rem;">
+        Your answers will be evaluated by Claude AI. Be as detailed as you can.
+      </p>
+      <button type="submit" class="btn btn-primary btn-lg">
+        <span aria-hidden="true">📊</span> Submit & Get Results
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

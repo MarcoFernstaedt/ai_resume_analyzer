@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Upload Resume{% endblock %}
+
+{% block content %}
+<div style="max-width:680px;margin:0 auto;">
+  <div class="section-header mb-4">
+    <div>
+      <h1>Analyze Your Resume</h1>
+      <p style="margin-top:0.3rem;">Upload your resume and get detailed AI-powered feedback in seconds.</p>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" data-loading action="{% url 'resume_upload' %}">
+    {% csrf_token %}
+    <div class="card animate-fadeInUp mb-3">
+      <label class="file-drop" for="resume_file" aria-label="Upload resume file">
+        <input type="file" name="resume_file" id="resume_file" accept=".pdf,.docx,.txt" required aria-required="true">
+        <div class="file-drop-icon" aria-hidden="true">📄</div>
+        <div class="file-drop-text">
+          <strong>Click to upload</strong> or drag & drop<br>
+          <span style="font-size:0.82rem;color:var(--text-muted);">PDF, DOCX, or TXT — max 10MB</span>
+        </div>
+      </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block btn-lg">
+      <span aria-hidden="true">⚡</span> Analyze with AI
+    </button>
+  </form>
+
+  <!-- What we analyze -->
+  <div class="card mt-3 animate-fadeInUp animate-delay-1">
+    <h2 class="card-title mb-3">
+      <span aria-hidden="true">🔍</span> What We Analyze
+    </h2>
+    <div class="grid-2" style="gap:0.75rem;">
+      {% for item in analysis_items %}
+      <div class="flex-gap">
+        <span aria-hidden="true">{{ item.icon }}</span>
+        <span style="font-size:0.88rem;color:var(--text-secondary);">{{ item.label }}</span>
+      </div>
+      {% empty %}
+      <div class="flex-gap"><span aria-hidden="true">✅</span><span style="font-size:0.88rem;color:var(--text-secondary);">Skills extraction & categorization</span></div>
+      <div class="flex-gap"><span aria-hidden="true">📊</span><span style="font-size:0.88rem;color:var(--text-secondary);">ATS compatibility score</span></div>
+      <div class="flex-gap"><span aria-hidden="true">💪</span><span style="font-size:0.88rem;color:var(--text-secondary);">Strengths & weaknesses</span></div>
+      <div class="flex-gap"><span aria-hidden="true">🎯</span><span style="font-size:0.88rem;color:var(--text-secondary);">Impact & readability scores</span></div>
+      <div class="flex-gap"><span aria-hidden="true">⚡</span><span style="font-size:0.88rem;color:var(--text-secondary);">Quick wins to improve immediately</span></div>
+      <div class="flex-gap"><span aria-hidden="true">🏷️</span><span style="font-size:0.88rem;color:var(--text-secondary);">Seniority level assessment</span></div>
+      <div class="flex-gap"><span aria-hidden="true">💡</span><span style="font-size:0.88rem;color:var(--text-secondary);">Section-by-section feedback</span></div>
+      <div class="flex-gap"><span aria-hidden="true">🎭</span><span style="font-size:0.88rem;color:var(--text-secondary);">Role recommendations</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

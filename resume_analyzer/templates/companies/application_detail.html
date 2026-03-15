@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}{{ application.job_title }} — {{ application.company.name }}{% endblock %}
+{% block content %}
+<div class="section-header mb-4">
+  <div>
+    <h1>{{ application.job_title }}</h1>
+    <p><a href="{% url 'company_detail' application.company.pk %}">{{ application.company.name }}</a></p>
+  </div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <h2 class="card-title mb-3">Application Details</h2>
+    <dl style="display:flex;flex-direction:column;gap:0.7rem;">
+      {% if application.applied_date %}<div class="flex-between"><dt style="color:var(--text-muted);font-size:0.82rem;">Applied</dt><dd>{{ application.applied_date|date:"M j, Y" }}</dd></div>{% endif %}
+      {% if application.salary_min %}<div class="flex-between"><dt style="color:var(--text-muted);font-size:0.82rem;">Salary</dt><dd style="color:var(--accent-green);">${{ application.salary_min }}k – ${{ application.salary_max }}k</dd></div>{% endif %}
+      {% if application.job_url %}<div class="flex-between"><dt style="color:var(--text-muted);font-size:0.82rem;">Job URL</dt><dd><a href="{{ application.job_url }}" target="_blank" rel="noopener">View Posting</a></dd></div>{% endif %}
+    </dl>
+  </div>
+  {% if application.cover_letter %}
+  <div class="card">
+    <h2 class="card-title mb-2">Cover Letter</h2>
+    <p style="font-size:0.88rem;color:var(--text-secondary);white-space:pre-line;">{{ application.cover_letter }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

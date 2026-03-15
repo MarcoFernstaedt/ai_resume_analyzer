@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_description %}AI-powered resume analyzer for junior developers{% endblock %}">
+  <meta name="theme-color" content="#0d1117">
+  <title>{% block title %}DevResume AI{% endblock %} — DevResume AI</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Skip navigation for screen readers -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Decorative floating code background -->
+  <div class="code-bg" aria-hidden="true">
+    <div class="code-bg-inner">
+      const analyze = async (resume) => {<br>
+      &nbsp;&nbsp;const skills = await extract(resume);<br>
+      &nbsp;&nbsp;return await claude.analyze(skills);<br>
+      };<br>
+      <br>
+      function matchJD(resume, jd) {<br>
+      &nbsp;&nbsp;const score = nlp.compare(resume, jd);<br>
+      &nbsp;&nbsp;return { score, gaps: find(jd, resume) };<br>
+      }<br>
+      <br>
+      class ResumeBuilder {<br>
+      &nbsp;&nbsp;constructor(template) {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;this.template = template;<br>
+      &nbsp;&nbsp;}<br>
+      &nbsp;&nbsp;build(data) {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;return render(this.template, data);<br>
+      &nbsp;&nbsp;}<br>
+      }<br>
+      <br>
+      // AI-powered skill assessment<br>
+      async function assess(techStack) {<br>
+      &nbsp;&nbsp;const qs = await generateQuestions(techStack);<br>
+      &nbsp;&nbsp;const answers = await collectAnswers(qs);<br>
+      &nbsp;&nbsp;return evaluateLevel(answers);<br>
+      }<br>
+      <br>
+      const analyze = async (resume) => {<br>
+      &nbsp;&nbsp;const skills = await extract(resume);<br>
+      &nbsp;&nbsp;return await claude.analyze(skills);<br>
+      };<br>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Top Bar -->
+    <header class="topbar" role="banner">
+      <div class="flex-gap">
+        <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
+          <span></span><span></span><span></span>
+        </button>
+        <a href="{% url 'dashboard' %}" class="logo" aria-label="DevResume AI home">
+          <div class="logo-icon" aria-hidden="true">⚡</div>
+          Dev<span class="accent">Resume</span> AI
+        </a>
+      </div>
+
+      <nav aria-label="Quick actions" class="flex-gap hide-mobile">
+        <a href="{% url 'resume_upload' %}" class="btn btn-primary btn-sm">
+          <span aria-hidden="true">+</span> Analyze Resume
+        </a>
+        <a href="{% url 'assessment_start' %}" class="btn btn-ghost btn-sm">
+          <span aria-hidden="true">🧪</span> Skill Test
+        </a>
+      </nav>
+
+      <div class="flex-gap">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-family:var(--font-mono);" class="hide-mobile">
+          claude-sonnet-4-6
+        </span>
+      </div>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" aria-current="{% if request.resolver_match.url_name == 'dashboard' %}page{% endif %}">
+          <span class="nav-icon" aria-hidden="true">🏠</span> Dashboard
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Resume</div>
+        <a href="{% url 'resume_upload' %}" class="nav-item {% if request.resolver_match.url_name == 'resume_upload' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">📤</span> Upload & Analyze
+        </a>
+        <a href="{% url 'resume_list' %}" class="nav-item {% if request.resolver_match.url_name == 'resume_list' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">📄</span> My Resumes
+        </a>
+        <a href="{% url 'resume_builder' %}" class="nav-item {% if request.resolver_match.url_name == 'resume_builder' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">🔨</span> Resume Builder
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Growth</div>
+        <a href="{% url 'assessment_start' %}" class="nav-item {% if 'assessment' in request.resolver_match.url_name %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">🧪</span> Skill Assessment
+        </a>
+        <a href="{% url 'assessment_list' %}" class="nav-item">
+          <span class="nav-icon" aria-hidden="true">📊</span> Assessment History
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Job Hunt</div>
+        <a href="{% url 'company_list' %}" class="nav-item {% if 'company' in request.resolver_match.url_name %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">🏢</span> Companies
+        </a>
+        <a href="{% url 'company_create' %}" class="nav-item">
+          <span class="nav-icon" aria-hidden="true">➕</span> Track Company
+        </a>
+      </div>
+
+      <!-- Bottom status -->
+      <div style="padding: 1rem; margin-top: auto; border-top: 1px solid var(--border);">
+        <div class="terminal" style="font-size:0.72rem;">
+          <div class="terminal-header">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+            <span class="terminal-title">ai status</span>
+          </div>
+          <div class="terminal-body" style="padding:0.75rem;">
+            <span class="prompt">$</span> claude --status<br>
+            <span class="output">✓ Connected<br>✓ claude-sonnet-4-6</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile overlay -->
+    <div class="mobile-nav-overlay" id="mobile-overlay" aria-hidden="true"></div>
+
+    <!-- Main content -->
+    <main id="main-content" class="main-content" role="main">
+      <!-- Django Messages -->
+      {% if messages %}
+        <div role="alert" aria-live="polite">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}" data-auto-dismiss>
+              <span aria-hidden="true">
+                {% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}✕{% else %}ℹ{% endif %}
+              </span>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{% static 'js/main.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}{% if company %}Edit{% else %}Add{% endif %} Company{% endblock %}
+{% load resume_tags %}
+
+{% block content %}
+<div style="max-width:700px;margin:0 auto;">
+  <div class="section-header mb-4">
+    <h1><span aria-hidden="true">🏢</span> {% if company %}Edit{% else %}Track New{% endif %} Company</h1>
+    {% if company %}<a href="{% url 'company_detail' company.pk %}" class="btn btn-ghost">Cancel</a>{% endif %}
+  </div>
+
+  <form method="post" data-loading>
+    {% csrf_token %}
+
+    <div class="card mb-3 animate-fadeInUp">
+      <h2 class="card-title mb-3">Company Info</h2>
+      <div class="grid-2" style="gap:0.75rem;">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label" for="name">Company Name <span style="color:var(--accent-red);" aria-label="required">*</span></label>
+          <input type="text" id="name" name="name" class="form-control" value="{{ company.name|default:'' }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="website">Website</label>
+          <input type="url" id="website" name="website" class="form-control" value="{{ company.website|default:'' }}" placeholder="https://company.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="industry">Industry</label>
+          <input type="text" id="industry" name="industry" class="form-control" value="{{ company.industry|default:'' }}" placeholder="FinTech, SaaS, Gaming...">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="size">Company Size</label>
+          <select id="size" name="size" class="form-control">
+            <option value="">— Unknown —</option>
+            <option value="1-10" {% if company.size == "1-10" %}selected{% endif %}>1-10 employees</option>
+            <option value="11-50" {% if company.size == "11-50" %}selected{% endif %}>11-50 employees</option>
+            <option value="51-200" {% if company.size == "51-200" %}selected{% endif %}>51-200 employees</option>
+            <option value="201-500" {% if company.size == "201-500" %}selected{% endif %}>201-500 employees</option>
+            <option value="500-1000" {% if company.size == "500-1000" %}selected{% endif %}>500-1000 employees</option>
+            <option value="1000+" {% if company.size == "1000+" %}selected{% endif %}>1000+ employees</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="location">Location</label>
+          <input type="text" id="location" name="location" class="form-control" value="{{ company.location|default:'' }}" placeholder="San Francisco, CA">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="remote_policy">Remote Policy</label>
+          <select id="remote_policy" name="remote_policy" class="form-control">
+            <option value="">— Unknown —</option>
+              <option value="Remote" {% if company.remote_policy == "Remote" %}selected{% endif %}>Remote</option>
+            <option value="Hybrid" {% if company.remote_policy == "Hybrid" %}selected{% endif %}>Hybrid</option>
+            <option value="On-site" {% if company.remote_policy == "On-site" %}selected{% endif %}>On-site</option>
+            <option value="Flexible" {% if company.remote_policy == "Flexible" %}selected{% endif %}>Flexible</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="glassdoor_rating">Glassdoor Rating</label>
+          <input type="number" id="glassdoor_rating" name="glassdoor_rating" class="form-control" value="{{ company.glassdoor_rating|default:'' }}" min="1" max="5" step="0.1" placeholder="3.5">
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3 animate-fadeInUp animate-delay-1">
+      <h2 class="card-title mb-3">Application Status</h2>
+      <div class="grid-2" style="gap:0.75rem;">
+        <div class="form-group">
+          <label class="form-label" for="status">Status</label>
+          <select id="status" name="status" class="form-control">
+            {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if company.status == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="priority">Priority</label>
+          <select id="priority" name="priority" class="form-control">
+            {% for val, label in priority_choices %}
+            <option value="{{ val }}" {% if company.priority == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3 animate-fadeInUp animate-delay-2">
+      <h2 class="card-title mb-3">Tech & Notes</h2>
+      <div class="form-group">
+        <label class="form-label" for="tech_stack">Tech Stack</label>
+        <input type="text" id="tech_stack" name="tech_stack" class="form-control"
+          value="{{ company.tech_stack|join:', '|default:'' }}" placeholder="Python, React, PostgreSQL, AWS">
+        <p class="form-hint">Comma-separated technologies</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="culture_notes">Culture Notes</label>
+        <textarea id="culture_notes" name="culture_notes" class="form-control" rows="3" placeholder="Startup culture, fast-paced, remote-first...">{{ company.culture_notes|default:'' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="notes">Personal Notes</label>
+        <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Recruiter name, referral contact, timeline...">{{ company.notes|default:'' }}</textarea>
+      </div>
+    </div>
+
+    <!-- AI Research -->
+    {% if not company %}
+    <div class="card mb-4 animate-fadeInUp animate-delay-3">
+      <h2 class="card-title mb-2"><span aria-hidden="true">🤖</span> AI Research (Optional)</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
+        Let Claude AI generate interview tips, culture insights, and prep checklist for this company.
+      </p>
+      <div class="flex-gap" style="align-items:flex-end;gap:0.75rem;flex-wrap:wrap;">
+        <div class="form-group" style="flex:1;margin:0;">
+          <label class="form-label" for="ai_job_title">Role you're applying for</label>
+          <input type="text" id="ai_job_title" name="ai_job_title" class="form-control" placeholder="Junior Frontend Developer">
+        </div>
+        <label class="flex-gap" style="white-space:nowrap;cursor:pointer;">
+          <input type="checkbox" name="ai_research" id="ai_research" style="accent-color:var(--accent-blue);">
+          <span style="font-size:0.9rem;">Generate AI insights</span>
+        </label>
+      </div>
+    </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary btn-block btn-lg">
+      <span aria-hidden="true">{% if company %}💾{% else %}➕{% endif %}</span>
+      {% if company %}Save Changes{% else %}Add Company{% endif %}
+    </button>
+  </form>
+</div>
+{% endblock %}

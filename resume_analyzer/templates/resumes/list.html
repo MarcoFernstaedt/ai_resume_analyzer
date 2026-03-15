@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}My Resumes{% endblock %}
+
+{% block content %}
+<div class="section-header mb-4">
+  <h1><span aria-hidden="true">📄</span> My Resumes</h1>
+  <a href="{% url 'resume_upload' %}" class="btn btn-primary">+ Upload New</a>
+</div>
+
+{% if resumes %}
+<div class="table-wrap" role="region" aria-label="Resumes table">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">File</th>
+        <th scope="col">Score</th>
+        <th scope="col">Skills</th>
+        <th scope="col">Status</th>
+        <th scope="col">Uploaded</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for resume in resumes %}
+      <tr>
+        <td>
+          <a href="{% url 'resume_detail' resume.pk %}" style="color:var(--text-primary);font-weight:600;">
+            {{ resume.original_filename|default:"Resume #"|add:resume.pk|stringformat:"s" }}
+          </a>
+        </td>
+        <td>
+          <span class="badge {% if resume.score >= 80 %}badge-green{% elif resume.score >= 60 %}badge-yellow{% else %}badge-red{% endif %}">
+            {{ resume.score }}%
+          </span>
+        </td>
+        <td>
+          <span style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted);">
+            {{ resume.skills_list|length }} skills
+          </span>
+        </td>
+        <td>
+          <span class="badge {% if resume.status == 'analyzed' %}badge-green{% elif resume.status == 'analyzing' %}badge-blue{% else %}badge-gray{% endif %}">
+            {{ resume.status }}
+          </span>
+        </td>
+        <td style="font-size:0.82rem;color:var(--text-muted);">{{ resume.uploaded_at|date:"M j, Y" }}</td>
+        <td>
+          <div class="flex-gap">
+            <a href="{% url 'resume_detail' resume.pk %}" class="btn btn-ghost btn-sm">View</a>
+            <a href="{% url 'resume_delete' resume.pk %}" class="btn btn-danger btn-sm">Delete</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state card">
+  <div class="empty-state-icon" aria-hidden="true">📄</div>
+  <h2>No resumes yet</h2>
+  <p>Upload your first resume to get AI-powered feedback</p>
+  <a href="{% url 'resume_upload' %}" class="btn btn-primary mt-2">Upload Resume</a>
+</div>
+{% endif %}
+{% endblock %}

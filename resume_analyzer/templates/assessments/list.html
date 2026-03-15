@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Assessment History{% endblock %}
+{% block content %}
+<div class="section-header mb-4">
+  <h1><span aria-hidden="true">📊</span> Assessment History</h1>
+  <a href="{% url 'assessment_start' %}" class="btn btn-primary">New Assessment</a>
+</div>
+
+{% if assessments %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Tech Stack</th>
+        <th scope="col">Level</th>
+        <th scope="col">Score</th>
+        <th scope="col">Status</th>
+        <th scope="col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in assessments %}
+      <tr>
+        <td style="font-size:0.82rem;color:var(--text-muted);">{{ a.created_at|date:"M j, Y" }}</td>
+        <td>
+          <div class="flex-wrap" style="gap:0.3rem;">
+            {% for tech in a.tech_stack|slice:":4" %}
+            <span class="skill-tag" style="font-size:0.72rem;padding:0.15rem 0.5rem;">{{ tech }}</span>
+            {% endfor %}
+            {% if a.tech_stack|length > 4 %}<span class="badge badge-gray">+{{ a.tech_stack|length|add:"-4" }}</span>{% endif %}
+          </div>
+        </td>
+        <td>
+          <span class="badge {% if a.assessed_level == 'senior' %}badge-purple{% elif a.assessed_level == 'mid' %}badge-blue{% elif a.assessed_level == 'junior' %}badge-green{% else %}badge-gray{% endif %}">
+            {{ a.assessed_level|default:"—"|title }}
+          </span>
+        </td>
+        <td>
+          {% if a.overall_score %}
+          <span class="badge {% if a.overall_score >= 80 %}badge-green{% elif a.overall_score >= 60 %}badge-yellow{% else %}badge-red{% endif %}">
+            {{ a.overall_score }}%
+          </span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <span class="badge {% if a.status == 'completed' %}badge-green{% else %}badge-yellow{% endif %}">
+            {{ a.status|title }}
+          </span>
+        </td>
+        <td>
+          <a href="{% url 'assessment_detail' a.pk %}" class="btn btn-ghost btn-sm">
+            {% if a.status == 'in_progress' %}Continue{% else %}View{% endif %}
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state card">
+  <div class="empty-state-icon" aria-hidden="true">🧪</div>
+  <h2>No assessments yet</h2>
+  <p>Take your first skill assessment to understand your developer level</p>
+  <a href="{% url 'assessment_start' %}" class="btn btn-primary mt-2">Start Assessment</a>
+</div>
+{% endif %}
+{% endblock %}

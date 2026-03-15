@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load resume_tags %}
+{% block title %}Companies{% endblock %}
+
+{% block content %}
+<div class="section-header mb-4">
+  <div>
+    <h1><span aria-hidden="true">🏢</span> Company Tracker</h1>
+    <p>Track every company in your job hunt pipeline</p>
+  </div>
+  <a href="{% url 'company_create' %}" class="btn btn-primary">+ Track Company</a>
+</div>
+
+<!-- Status filter tabs -->
+<div role="tablist" aria-label="Filter by status" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+  <a href="{% url 'company_list' %}" class="btn {% if not status_filter %}btn-primary{% else %}btn-ghost{% endif %} btn-sm"
+    role="tab" aria-selected="{{ not status_filter|yesno:'true,false' }}">All ({{ companies|length }})</a>
+  {% for status, label in status_choices %}
+  <a href="?status={{ status }}" class="btn {% if status_filter == status %}btn-primary{% else %}btn-ghost{% endif %} btn-sm"
+    role="tab" aria-selected="{{ status_filter == status|yesno:'true,false' }}">
+    <span class="status-dot status-{{ status }}" aria-hidden="true"></span>
+    {{ label }} ({{ status_counts|get_item:status|default:0 }})
+  </a>
+  {% endfor %}
+</div>
+
+{% if companies %}
+<div class="grid-2" role="list" aria-label="Companies">
+  {% for company in companies %}
+  <article class="card card-glow-blue animate-fadeInUp" role="listitem" aria-label="{{ company.name }}">
+    <div class="card-header mb-2">
+      <div>
+        <h2 style="font-size:1.1rem;font-weight:700;">
+          <a href="{% url 'company_detail' company.pk %}" style="color:var(--text-primary);text-decoration:none;">
+            {{ company.name }}
+          </a>
+        </h2>
+        {% if company.industry %}
+        <div style="font-size:0.8rem;color:var(--text-muted);">{{ company.industry }}</div>
+        {% endif %}
+      </div>
+      <div class="flex-gap">
+        <span class="badge badge-{% if company.priority == 'dream' %}purple{% elif company.priority == 'high' %}red{% elif company.priority == 'medium' %}yellow{% else %}gray{% endif %}">
+          {{ company.priority|title }}
+        </span>
+        <span style="font-size:0.8rem;color:var(--text-muted);">
+          <span class="status-dot status-{{ company.status }}" aria-hidden="true"></span>
+          {{ company.get_status_display }}
+        </span>
+      </div>
+    </div>
+
+    {% if company.tech_stack %}
+    <div class="flex-wrap mb-2" aria-label="Tech stack">
+      {% for tech in company.tech_stack|slice:":5" %}
+      <span class="skill-tag" style="font-size:0.72rem;">{{ tech }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flex-gap" style="font-size:0.82rem;color:var(--text-muted);flex-wrap:wrap;">
+      {% if company.location %}<span>📍 {{ company.location }}</span>{% endif %}
+      {% if company.remote_policy %}<span>🌐 {{ company.remote_policy }}</span>{% endif %}
+      {% if company.glassdoor_rating %}<span>⭐ {{ company.glassdoor_rating }}</span>{% endif %}
+    </div>
+
+    <div class="divider" style="margin:0.75rem 0;"></div>
+    <div class="flex-gap">
+      <a href="{% url 'company_detail' company.pk %}" class="btn btn-ghost btn-sm">View</a>
+      <a href="{% url 'application_create' company.pk %}" class="btn btn-primary btn-sm">Log Application</a>
+      <a href="{% url 'company_edit' company.pk %}" class="btn btn-ghost btn-sm">Edit</a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+  <div class="empty-state-icon" aria-hidden="true">🏢</div>
+  <h2>No companies tracked yet</h2>
+  <p>Start tracking companies you're interested in to stay organized</p>
+  <a href="{% url 'company_create' %}" class="btn btn-primary mt-2">Add Your First Company</a>
+</div>
+{% endif %}
+{% endblock %}
