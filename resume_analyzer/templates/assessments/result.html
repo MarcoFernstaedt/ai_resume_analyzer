@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Assessment Results{% endblock %}
+
+{% block content %}
+<div style="max-width:800px;margin:0 auto;">
+  <div class="section-header mb-4">
+    <div>
+      <h1><span aria-hidden="true">📊</span> Assessment Results</h1>
+      <p>{{ assessment.tech_stack|join:", " }}</p>
+    </div>
+    <a href="{% url 'assessment_start' %}" class="btn btn-primary">Take Another</a>
+  </div>
+
+  <!-- Score overview -->
+  <div class="grid-3 mb-4">
+    <div class="card flex-center" style="flex-direction:column;gap:1rem;" aria-label="Score {{ percentage }} percent">
+      <div class="score-ring" data-score="{{ percentage }}">
+        <svg width="130" height="130" aria-hidden="true">
+          <circle cx="65" cy="65" r="55" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle class="score-circle" cx="65" cy="65" r="55" fill="none" stroke-width="8" stroke-linecap="round"/>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-ring-value">{{ percentage }}</div>
+          <div class="score-ring-label">%</div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:0.85rem;color:var(--text-muted);">{{ total_score }} / {{ max_score }} points</div>
+      </div>
+    </div>
+
+    <div class="card" style="grid-column:span 2;">
+      <div class="flex-gap mb-3">
+        <span aria-hidden="true" style="font-size:1.8rem;">
+          {% if assessment.assessed_level == 'beginner' %}🌱
+          {% elif assessment.assessed_level == 'junior' %}🚀
+          {% elif assessment.assessed_level == 'mid' %}⭐
+          {% else %}🏆{% endif %}
+        </span>
+        <div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--text-primary);">
+            {{ assessment.assessed_level|title }}
+          </div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">Assessed Level</div>
+        </div>
+      </div>
+      {% if assessment.ai_summary %}
+      <p style="color:var(--text-secondary);font-size:0.92rem;">{{ assessment.ai_summary }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  {% if assessment.recommendations %}
+  <div class="card mb-4 animate-fadeInUp" aria-labelledby="recs-heading">
+    <h2 class="card-title mb-3" id="recs-heading"><span aria-hidden="true">📚</span> Learning Recommendations</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      {% for rec in assessment.recommendations %}
+      <div style="padding:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);display:flex;gap:1rem;align-items:flex-start;">
+        <span class="badge {% if rec.priority == 'high' %}badge-red{% elif rec.priority == 'medium' %}badge-yellow{% else %}badge-green{% endif %}" style="white-space:nowrap;min-width:50px;justify-content:center;">
+          {{ rec.priority|default:"med"|title }}
+        </span>
+        <div>
+          <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem;">{{ rec.topic }}</div>
+          {% if rec.reason %}<div style="font-size:0.82rem;color:var(--text-muted);margin-top:0.2rem;">{{ rec.reason }}</div>{% endif %}
+          {% if rec.resource %}<div style="font-size:0.8rem;color:var(--accent-blue);margin-top:0.2rem;font-family:var(--font-mono);">→ {{ rec.resource }}</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Question review -->
+  <div class="mb-4 animate-fadeInUp" aria-labelledby="review-heading">
+    <h2 style="margin-bottom:1rem;" id="review-heading"><span aria-hidden="true">📋</span> Question Review</h2>
+    {% for question in questions %}
+    <div class="question-card" aria-labelledby="review-q-{{ question.pk }}">
+      <div class="question-number">
+        Question {{ forloop.counter }}
+        <span class="badge {% if question.score >= question.max_score|floatformat:"0"|add:"0" %}badge-green{% elif question.score > 0 %}badge-yellow{% else %}badge-red{% endif %}" style="margin-left:0.5rem;">
+          {{ question.score }} / {{ question.max_score }}
+        </span>
+      </div>
+      <div class="question-text" id="review-q-{{ question.pk }}">{{ question.question_text }}</div>
+
+      {% if question.user_answer %}
+      <div style="margin-top:0.75rem;">
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.3rem;">Your answer:</div>
+        <div style="background:var(--bg-tertiary);padding:0.75rem;border-radius:var(--radius-md);font-size:0.88rem;color:var(--text-secondary);font-family:{% if question.question_type == 'coding' %}var(--font-mono){% else %}var(--font-sans){% endif %};">
+          {{ question.user_answer }}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if question.ai_feedback %}
+      <div class="alert alert-info mt-2" role="note">
+        <span aria-hidden="true">🤖</span>
+        <span>{{ question.ai_feedback }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="flex-gap" style="justify-content:center;gap:1rem;">
+    <a href="{% url 'assessment_start' %}" class="btn btn-primary btn-lg">
+      <span aria-hidden="true">🔄</span> Take Another Assessment
+    </a>
+    <a href="{% url 'resume_builder' %}" class="btn btn-ghost btn-lg">
+      <span aria-hidden="true">🔨</span> Improve My Resume
+    </a>
+  </div>
+</div>
+{% endblock %}

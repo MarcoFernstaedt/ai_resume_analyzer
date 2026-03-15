@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Log Application — {{ company.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width:640px;margin:0 auto;">
+  <div class="section-header mb-4">
+    <div>
+      <h1><span aria-hidden="true">📨</span> Log Application</h1>
+      <p style="color:var(--text-muted);">{{ company.name }}</p>
+    </div>
+    <a href="{% url 'company_detail' company.pk %}" class="btn btn-ghost">Cancel</a>
+  </div>
+
+  <form method="post" data-loading>
+    {% csrf_token %}
+    <div class="card mb-3 animate-fadeInUp">
+      <h2 class="card-title mb-3">Job Details</h2>
+      <div class="form-group">
+        <label class="form-label" for="job_title">Job Title <span style="color:var(--accent-red);" aria-label="required">*</span></label>
+        <input type="text" id="job_title" name="job_title" class="form-control" placeholder="Junior Frontend Developer" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="job_url">Job Posting URL</label>
+        <input type="url" id="job_url" name="job_url" class="form-control" placeholder="https://jobs.company.com/...">
+      </div>
+      <div class="grid-2" style="gap:0.75rem;">
+        <div class="form-group">
+          <label class="form-label" for="salary_min">Min Salary ($k)</label>
+          <input type="number" id="salary_min" name="salary_min" class="form-control" placeholder="80">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="salary_max">Max Salary ($k)</label>
+          <input type="number" id="salary_max" name="salary_max" class="form-control" placeholder="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="applied_date">Applied Date</label>
+          <input type="date" id="applied_date" name="applied_date" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="follow_up_date">Follow-up Date</label>
+          <input type="date" id="follow_up_date" name="follow_up_date" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="job_description">Job Description</label>
+        <textarea id="job_description" name="job_description" class="form-control" rows="5" placeholder="Paste the job description for AI-powered matching later..."></textarea>
+      </div>
+    </div>
+
+    <div class="card mb-3 animate-fadeInUp animate-delay-1">
+      <h2 class="card-title mb-3">Resume & Cover Letter</h2>
+      {% if resumes %}
+      <div class="form-group">
+        <label class="form-label" for="resume_id">Resume Used</label>
+        <select id="resume_id" name="resume_id" class="form-control">
+          <option value="">— Not specified —</option>
+          {% for r in resumes %}
+          <option value="{{ r.pk }}">{{ r.original_filename }} ({{ r.score }}%)</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div class="form-group">
+        <label class="form-label" for="cover_letter">Cover Letter</label>
+        <textarea id="cover_letter" name="cover_letter" class="form-control" rows="6" placeholder="Your cover letter for this role..."></textarea>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block btn-lg">
+      <span aria-hidden="true">💾</span> Save Application
+    </button>
+  </form>
+</div>
+{% endblock %}

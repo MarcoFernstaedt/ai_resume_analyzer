@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block title %}Resume Builder{% endblock %}
+
+{% block content %}
+<div class="section-header mb-4">
+  <div>
+    <h1><span aria-hidden="true">🔨</span> Resume Builder</h1>
+    <p>Build a polished dev resume and export to Harvard or Google template</p>
+  </div>
+</div>
+
+{% if saved %}
+<div class="alert alert-success" role="status" data-auto-dismiss>✓ Resume saved! Use export buttons to download.</div>
+{% endif %}
+
+<form method="post" data-loading id="builder-form">
+  {% csrf_token %}
+
+  <div class="grid-2" style="align-items:start;">
+    <!-- Left: Form -->
+    <div>
+      <!-- Personal Info -->
+      <div class="card mb-3 animate-fadeInUp">
+        <h2 class="card-title mb-3"><span aria-hidden="true">👤</span> Personal Info</h2>
+        <div class="grid-2" style="gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name <span style="color:var(--accent-red);" aria-label="required">*</span></label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ resume_data.name|default:'' }}" placeholder="Jane Developer" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ resume_data.email|default:'' }}" placeholder="jane@dev.io">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" class="form-control" value="{{ resume_data.phone|default:'' }}" placeholder="+1 (555) 000-0000">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="location">Location</label>
+            <input type="text" id="location" name="location" class="form-control" value="{{ resume_data.location|default:'' }}" placeholder="San Francisco, CA">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="linkedin">LinkedIn URL</label>
+            <input type="url" id="linkedin" name="linkedin" class="form-control" value="{{ resume_data.linkedin|default:'' }}" placeholder="linkedin.com/in/jane">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="github">GitHub URL</label>
+            <input type="url" id="github" name="github" class="form-control" value="{{ resume_data.github|default:'' }}" placeholder="github.com/jane">
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card mb-3 animate-fadeInUp animate-delay-1">
+        <h2 class="card-title mb-3"><span aria-hidden="true">✍️</span> Professional Summary</h2>
+        <div class="form-group">
+          <textarea id="summary" name="summary" class="form-control" rows="4" placeholder="Junior full-stack developer with passion for building scalable web applications. Proficient in React and Python...">{{ resume_data.summary|default:'' }}</textarea>
+          <p class="form-hint">2-4 sentences. Lead with your strongest skill + years of experience + what you're looking for.</p>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="card mb-3 animate-fadeInUp animate-delay-2">
+        <h2 class="card-title mb-3"><span aria-hidden="true">🛠️</span> Technical Skills</h2>
+        <div class="form-group">
+          <textarea id="skills" name="skills" class="form-control" rows="3" placeholder="Python, JavaScript, React, Django, PostgreSQL, Docker, Git, AWS">{% if resume_data.skills %}{{ resume_data.skills|join:", " }}{% endif %}</textarea>
+          <p class="form-hint">Comma-separated. Put your strongest skills first.</p>
+        </div>
+      </div>
+
+      <!-- Experience -->
+      <div class="card mb-3 animate-fadeInUp">
+        <div class="card-header">
+          <h2 class="card-title"><span aria-hidden="true">💼</span> Work Experience</h2>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addExperience()" aria-label="Add work experience">+ Add</button>
+        </div>
+        <div id="experience-list">
+          {% for exp in resume_data.experience %}
+          <div class="experience-entry" style="border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+            <div class="grid-2" style="gap:0.5rem;margin-bottom:0.5rem;">
+              <input class="form-control" name="exp_title[]" placeholder="Job Title" value="{{ exp.title }}">
+              <input class="form-control" name="exp_company[]" placeholder="Company" value="{{ exp.company }}">
+              <input class="form-control" name="exp_dates[]" placeholder="Jan 2023 – Present" value="{{ exp.dates }}" style="grid-column:1/-1;">
+            </div>
+            <textarea class="form-control" name="exp_bullets[]" rows="3" placeholder="• Built X feature using Y technology, resulting in Z improvement&#10;• Collaborated with team of N developers">{{ exp.bullets|join:"\n" }}</textarea>
+            <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">Remove</button>
+          </div>
+          {% empty %}
+          <p style="font-size:0.85rem;color:var(--text-muted);">No experience entries yet. Click "+ Add" above.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div class="card mb-3 animate-fadeInUp">
+        <div class="card-header">
+          <h2 class="card-title"><span aria-hidden="true">🎓</span> Education</h2>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addEducation()" aria-label="Add education">+ Add</button>
+        </div>
+        <div id="education-list">
+          {% for edu in resume_data.education %}
+          <div class="education-entry" style="border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+            <div class="grid-2" style="gap:0.5rem;">
+              <input class="form-control" name="edu_degree[]" placeholder="B.S. Computer Science" value="{{ edu.degree }}">
+              <input class="form-control" name="edu_school[]" placeholder="University Name" value="{{ edu.school }}">
+              <input class="form-control" name="edu_dates[]" placeholder="2019 – 2023" value="{{ edu.dates }}" style="grid-column:1/-1;">
+            </div>
+            <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">Remove</button>
+          </div>
+          {% empty %}
+          <p style="font-size:0.85rem;color:var(--text-muted);">No education entries yet. Click "+ Add" above.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Projects -->
+      <div class="card mb-3 animate-fadeInUp">
+        <div class="card-header">
+          <h2 class="card-title"><span aria-hidden="true">🚀</span> Projects</h2>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addProject()" aria-label="Add project">+ Add</button>
+        </div>
+        <div id="projects-list">
+          {% for proj in resume_data.projects %}
+          <div class="project-entry" style="border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+            <div class="grid-2" style="gap:0.5rem;margin-bottom:0.5rem;">
+              <input class="form-control" name="proj_name[]" placeholder="Project Name" value="{{ proj.name }}">
+              <input class="form-control" name="proj_tech[]" placeholder="React, Node.js, PostgreSQL" value="{{ proj.tech }}">
+            </div>
+            <textarea class="form-control" name="proj_desc[]" rows="2" placeholder="What it does, impact, your role">{{ proj.description }}</textarea>
+            <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">Remove</button>
+          </div>
+          {% empty %}
+          <p style="font-size:0.85rem;color:var(--text-muted);">No projects yet. Projects are crucial for junior devs!</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Export Panel -->
+    <div style="position:sticky;top:80px;">
+      <div class="card mb-3 animate-fadeInUp">
+        <h2 class="card-title mb-3"><span aria-hidden="true">📥</span> Export Resume</h2>
+        <div class="form-group">
+          <label class="form-label" for="template">Template</label>
+          <select id="template" name="template" class="form-control">
+            <option value="harvard" {% if resume_data.template == 'harvard' %}selected{% endif %}>📐 Harvard Template</option>
+            <option value="google" {% if resume_data.template == 'google' %}selected{% endif %}>🔵 Google Template</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <button type="submit" name="export_docx" class="btn btn-primary btn-block" data-no-loading>
+            <span aria-hidden="true">📝</span> Download as Word (.docx)
+          </button>
+          <button type="submit" name="export_txt" class="btn btn-ghost btn-block" data-no-loading>
+            <span aria-hidden="true">📄</span> Download Plain Text (.txt)
+          </button>
+          <button type="submit" class="btn btn-success btn-block">
+            <span aria-hidden="true">💾</span> Save & Preview
+          </button>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="card animate-fadeInUp animate-delay-1">
+        <h2 class="card-title mb-2"><span aria-hidden="true">💡</span> Builder Tips</h2>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;" role="list">
+          <li style="font-size:0.82rem;color:var(--text-muted);">✓ Use action verbs: Built, Shipped, Reduced, Improved</li>
+          <li style="font-size:0.82rem;color:var(--text-muted);">✓ Quantify impact in every bullet</li>
+          <li style="font-size:0.82rem;color:var(--text-muted);">✓ List skills in order of proficiency</li>
+          <li style="font-size:0.82rem;color:var(--text-muted);">✓ Projects section is your portfolio</li>
+          <li style="font-size:0.82rem;color:var(--text-muted);">✓ Keep it to one page</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addExperience() {
+  const html = `<div class="experience-entry" style="border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+    <div class="grid-2" style="gap:0.5rem;margin-bottom:0.5rem;">
+      <input class="form-control" name="exp_title[]" placeholder="Job Title">
+      <input class="form-control" name="exp_company[]" placeholder="Company">
+      <input class="form-control" name="exp_dates[]" placeholder="Jan 2023 – Present" style="grid-column:1/-1;">
+    </div>
+    <textarea class="form-control" name="exp_bullets[]" rows="3" placeholder="• Built X using Y, achieving Z&#10;• Collaborated with team..."></textarea>
+    <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">Remove</button>
+  </div>`;
+  document.getElementById('experience-list').insertAdjacentHTML('beforeend', html);
+}
+
+function addEducation() {
+  const html = `<div class="education-entry" style="border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+    <div class="grid-2" style="gap:0.5rem;">
+      <input class="form-control" name="edu_degree[]" placeholder="B.S. Computer Science">
+      <input class="form-control" name="edu_school[]" placeholder="University Name">
+      <input class="form-control" name="edu_dates[]" placeholder="2019 – 2023" style="grid-column:1/-1;">
+    </div>
+    <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">Remove</button>
+  </div>`;
+  document.getElementById('education-list').insertAdjacentHTML('beforeend', html);
+}
+
+function addProject() {
+  const html = `<div class="project-entry" style="border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+    <div class="grid-2" style="gap:0.5rem;margin-bottom:0.5rem;">
+      <input class="form-control" name="proj_name[]" placeholder="Project Name">
+      <input class="form-control" name="proj_tech[]" placeholder="React, Node.js, PostgreSQL">
+    </div>
+    <textarea class="form-control" name="proj_desc[]" rows="2" placeholder="What it does, impact, your role"></textarea>
+    <button type="button" class="btn btn-danger btn-sm mt-1" onclick="this.parentElement.remove()">Remove</button>
+  </div>`;
+  document.getElementById('projects-list').insertAdjacentHTML('beforeend', html);
+}
+</script>
+{% endblock %}

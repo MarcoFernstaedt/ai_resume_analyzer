@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Delete Resume{% endblock %}
+{% block content %}
+<div style="max-width:500px;margin:0 auto;">
+  <div class="card animate-fadeInUp">
+    <h1 style="font-size:1.5rem;margin-bottom:1rem;"><span aria-hidden="true">🗑️</span> Delete Resume</h1>
+    <p style="color:var(--text-secondary);margin-bottom:1.5rem;">
+      Are you sure you want to delete <strong style="color:var(--text-primary);">{{ resume.original_filename }}</strong>?
+      This cannot be undone.
+    </p>
+    <form method="post" class="flex-gap">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Yes, Delete</button>
+      <a href="{% url 'resume_detail' resume.pk %}" class="btn btn-ghost">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}{{ company.name }}{% endblock %}
+
+{% block content %}
+<div class="section-header mb-4">
+  <div>
+    <h1>{{ company.name }}</h1>
+    <div class="flex-gap mt-1">
+      <span class="badge badge-{% if company.priority == 'dream' %}purple{% elif company.priority == 'high' %}red{% elif company.priority == 'medium' %}yellow{% else %}gray{% endif %}">
+        {{ company.priority|title }} Priority
+      </span>
+      <span style="font-size:0.85rem;color:var(--text-muted);">
+        <span class="status-dot status-{{ company.status }}" aria-hidden="true"></span>
+        {{ company.get_status_display }}
+      </span>
+    </div>
+  </div>
+  <div class="flex-gap">
+    <a href="{% url 'company_edit' company.pk %}" class="btn btn-ghost btn-sm">Edit</a>
+    <a href="{% url 'application_create' company.pk %}" class="btn btn-primary btn-sm">Log Application</a>
+    <a href="{% url 'company_delete' company.pk %}" class="btn btn-danger btn-sm">Delete</a>
+  </div>
+</div>
+
+<div class="grid-2 mb-4">
+  <!-- Company Info -->
+  <div class="card animate-fadeInUp">
+    <h2 class="card-title mb-3"><span aria-hidden="true">ℹ️</span> Company Info</h2>
+    <dl style="display:flex;flex-direction:column;gap:0.7rem;">
+      {% if company.website %}
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Website</dt>
+        <dd><a href="{{ company.website }}" target="_blank" rel="noopener noreferrer" style="font-size:0.88rem;">{{ company.website }}</a></dd>
+      </div>
+      {% endif %}
+      {% if company.industry %}
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Industry</dt>
+        <dd style="font-size:0.88rem;color:var(--text-secondary);">{{ company.industry }}</dd>
+      </div>
+      {% endif %}
+      {% if company.size %}
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Size</dt>
+        <dd style="font-size:0.88rem;">{{ company.size }} employees</dd>
+      </div>
+      {% endif %}
+      {% if company.location %}
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Location</dt>
+        <dd style="font-size:0.88rem;">{{ company.location }}</dd>
+      </div>
+      {% endif %}
+      {% if company.remote_policy %}
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Remote</dt>
+        <dd style="font-size:0.88rem;">{{ company.remote_policy }}</dd>
+      </div>
+      {% endif %}
+      {% if company.glassdoor_rating %}
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Glassdoor</dt>
+        <dd style="font-size:0.88rem;">⭐ {{ company.glassdoor_rating }}/5</dd>
+      </div>
+      {% endif %}
+    </dl>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="card animate-fadeInUp animate-delay-1">
+    <h2 class="card-title mb-3"><span aria-hidden="true">🛠️</span> Tech Stack</h2>
+    {% if company.tech_stack %}
+    <div class="flex-wrap" role="list" aria-label="Tech stack">
+      {% for tech in company.tech_stack %}
+      <span class="skill-tag" role="listitem">{{ tech }}</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-muted);font-size:0.88rem;">No tech stack listed yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if company.ai_insights %}
+<div class="card mb-4 animate-fadeInUp" aria-labelledby="ai-insights-heading">
+  <h2 class="card-title mb-2" id="ai-insights-heading"><span aria-hidden="true">🤖</span> AI Insights</h2>
+  <p style="color:var(--text-secondary);">{{ company.ai_insights }}</p>
+</div>
+{% endif %}
+
+{% if company.culture_notes %}
+<div class="card mb-4 animate-fadeInUp">
+  <h2 class="card-title mb-2"><span aria-hidden="true">🌐</span> Culture Notes</h2>
+  <p style="color:var(--text-secondary);">{{ company.culture_notes }}</p>
+</div>
+{% endif %}
+
+{% if company.notes %}
+<div class="card mb-4 animate-fadeInUp">
+  <h2 class="card-title mb-2"><span aria-hidden="true">📝</span> Personal Notes</h2>
+  <p style="color:var(--text-secondary);">{{ company.notes }}</p>
+</div>
+{% endif %}
+
+<!-- Applications -->
+<div class="card animate-fadeInUp" aria-labelledby="apps-heading">
+  <div class="card-header mb-3">
+    <h2 class="card-title" id="apps-heading"><span aria-hidden="true">📨</span> Applications</h2>
+    <a href="{% url 'application_create' company.pk %}" class="btn btn-primary btn-sm">Log Application</a>
+  </div>
+  {% if applications %}
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    {% for app in applications %}
+    <div style="padding:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);">
+      <div class="flex-between mb-1">
+        <strong style="color:var(--text-primary);">{{ app.job_title }}</strong>
+        <span style="font-size:0.8rem;color:var(--text-muted);">{{ app.applied_date|date:"M j, Y"|default:"Not applied yet" }}</span>
+      </div>
+      {% if app.salary_min or app.salary_max %}
+      <div style="font-size:0.82rem;color:var(--accent-green);">
+        💰 ${{ app.salary_min|default:"?" }}k – ${{ app.salary_max|default:"?" }}k
+      </div>
+      {% endif %}
+      {% if app.job_url %}
+      <a href="{{ app.job_url }}" target="_blank" rel="noopener noreferrer" style="font-size:0.8rem;color:var(--accent-blue);" class="mt-1">→ View Job Posting</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state" style="padding:2rem;">
+    <div style="font-size:2rem;" aria-hidden="true">📨</div>
+    <p>No applications logged yet for this company.</p>
+    <a href="{% url 'application_create' company.pk %}" class="btn btn-primary btn-sm mt-2">Log Application</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

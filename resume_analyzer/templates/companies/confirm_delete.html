@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Delete Company{% endblock %}
+{% block content %}
+<div style="max-width:500px;margin:0 auto;">
+  <div class="card animate-fadeInUp">
+    <h1 style="font-size:1.5rem;margin-bottom:1rem;"><span aria-hidden="true">🗑️</span> Remove Company</h1>
+    <p style="color:var(--text-secondary);margin-bottom:1.5rem;">
+      Remove <strong style="color:var(--text-primary);">{{ company.name }}</strong> and all associated applications from your tracker?
+    </p>
+    <form method="post" class="flex-gap">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Yes, Remove</button>
+      <a href="{% url 'company_detail' company.pk %}" class="btn btn-ghost">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

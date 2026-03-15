@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% block title %}Resume Analysis{% endblock %}
+
+{% block content %}
+<div class="section-header mb-3">
+  <div>
+    <h1>Resume Analysis</h1>
+    <p style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted);">{{ resume.original_filename }}</p>
+  </div>
+  <div class="flex-gap">
+    <a href="{% url 'resume_builder' %}?resume_id={{ resume.pk }}" class="btn btn-ghost btn-sm">🔨 Build from This</a>
+    <a href="{% url 'resume_upload' %}" class="btn btn-primary btn-sm">Upload New</a>
+    <a href="{% url 'resume_delete' resume.pk %}" class="btn btn-danger btn-sm">Delete</a>
+  </div>
+</div>
+
+{% if resume.status == 'analyzing' %}
+<div class="loading-state card" role="status" aria-live="polite">
+  <div class="spinner" aria-hidden="true"></div>
+  <p>Analyzing your resume with Claude AI...</p>
+</div>
+{% elif resume.status == 'error' %}
+<div class="alert alert-error" role="alert">Analysis failed. Please try uploading again.</div>
+{% else %}
+
+<!-- Score overview -->
+<div class="grid-3 mb-4">
+  <div class="card flex-center" style="flex-direction:column;gap:0.5rem;" aria-label="Overall score {{ resume.score }} out of 100">
+    <div class="score-ring" data-score="{{ resume.score }}">
+      <svg width="120" height="120" aria-hidden="true">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="8"/>
+        <circle class="score-circle" cx="60" cy="60" r="50" fill="none" stroke-width="8" stroke-linecap="round"/>
+      </svg>
+      <div class="score-ring-text">
+        <div class="score-ring-value">{{ resume.score }}</div>
+        <div class="score-ring-label">score</div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-weight:700;color:var(--text-primary);">Overall Score</div>
+      <div class="badge {% if resume.score >= 80 %}badge-green{% elif resume.score >= 60 %}badge-yellow{% else %}badge-red{% endif %}">
+        {{ feedback.seniority_assessment|default:"Junior"|title }} Level
+      </div>
+    </div>
+  </div>
+
+  <div class="card" aria-label="Detailed scores">
+    <h2 class="card-title mb-3">Score Breakdown</h2>
+    <div style="display:flex;flex-direction:column;gap:0.9rem;">
+      {% with ats=feedback.ats_score|default:0 impact=feedback.impact_score|default:0 read=feedback.readability_score|default:0 %}
+      <div>
+        <div class="flex-between mb-1">
+          <span style="font-size:0.85rem;color:var(--text-secondary);">ATS Score</span>
+          <span style="font-family:var(--font-mono);font-size:0.85rem;">{{ ats }}%</span>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar" data-width="{{ ats }}" role="progressbar" aria-valuenow="{{ ats }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+      </div>
+      <div>
+        <div class="flex-between mb-1">
+          <span style="font-size:0.85rem;color:var(--text-secondary);">Impact Score</span>
+          <span style="font-family:var(--font-mono);font-size:0.85rem;">{{ impact }}%</span>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar" data-width="{{ impact }}" role="progressbar" aria-valuenow="{{ impact }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+      </div>
+      <div>
+        <div class="flex-between mb-1">
+          <span style="font-size:0.85rem;color:var(--text-secondary);">Readability</span>
+          <span style="font-family:var(--font-mono);font-size:0.85rem;">{{ read }}%</span>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar" data-width="{{ read }}" role="progressbar" aria-valuenow="{{ read }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+      </div>
+      {% endwith %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title mb-2">Quick Info</h2>
+    <dl style="display:flex;flex-direction:column;gap:0.6rem;">
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Experience</dt>
+        <dd style="font-family:var(--font-mono);font-size:0.85rem;">{{ resume.experience_years }}y</dd>
+      </div>
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Education</dt>
+        <dd style="font-size:0.82rem;text-align:right;">{{ resume.education_level|default:"N/A"|title }}</dd>
+      </div>
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Skills Found</dt>
+        <dd style="font-family:var(--font-mono);font-size:0.85rem;">{{ resume.skills_list|length }}</dd>
+      </div>
+      <div class="flex-between">
+        <dt style="font-size:0.82rem;color:var(--text-muted);">Analyzed</dt>
+        <dd style="font-size:0.82rem;">{{ resume.uploaded_at|date:"M j" }}</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<!-- Overall feedback -->
+{% if feedback.overall_feedback %}
+<div class="card mb-3 animate-fadeInUp">
+  <div class="flex-gap mb-2">
+    <span aria-hidden="true" style="font-size:1.3rem;">🤖</span>
+    <h2 class="card-title">AI Feedback</h2>
+  </div>
+  <p style="color:var(--text-secondary);">{{ feedback.overall_feedback }}</p>
+  {% if feedback.top_improvement %}
+  <div class="alert alert-warning mt-2" role="note">
+    <span aria-hidden="true">⚡</span>
+    <strong>Top Priority:</strong> {{ feedback.top_improvement }}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="grid-2 mb-4">
+  <!-- Strengths -->
+  <div class="card animate-fadeInUp">
+    <h2 class="card-title mb-3"><span aria-hidden="true">💪</span> Strengths</h2>
+    {% if feedback.strengths %}
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;" role="list">
+      {% for s in feedback.strengths %}
+      <li class="flex-gap">
+        <span aria-hidden="true" style="color:var(--accent-green);">✓</span>
+        <span style="font-size:0.9rem;color:var(--text-secondary);">{{ s }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p>No strengths identified.</p>{% endif %}
+  </div>
+
+  <!-- Weaknesses -->
+  <div class="card animate-fadeInUp animate-delay-1">
+    <h2 class="card-title mb-3"><span aria-hidden="true">⚠️</span> Areas to Improve</h2>
+    {% if feedback.weaknesses %}
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;" role="list">
+      {% for w in feedback.weaknesses %}
+      <li class="flex-gap">
+        <span aria-hidden="true" style="color:var(--accent-orange);">→</span>
+        <span style="font-size:0.9rem;color:var(--text-secondary);">{{ w }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p>No major weaknesses found.</p>{% endif %}
+  </div>
+
+  <!-- Quick Wins -->
+  <div class="card animate-fadeInUp animate-delay-2">
+    <h2 class="card-title mb-3"><span aria-hidden="true">⚡</span> Quick Wins</h2>
+    {% if feedback.quick_wins %}
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;" role="list">
+      {% for qw in feedback.quick_wins %}
+      <li style="padding:0.6rem 0.8rem;background:rgba(88,166,255,0.06);border-radius:var(--radius-md);font-size:0.88rem;color:var(--text-secondary);">
+        {{ qw }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p>No quick wins identified.</p>{% endif %}
+  </div>
+
+  <!-- Skills -->
+  <div class="card animate-fadeInUp animate-delay-3">
+    <h2 class="card-title mb-3"><span aria-hidden="true">🛠️</span> Detected Skills</h2>
+    <div class="flex-wrap" role="list" aria-label="Detected skills">
+      {% for skill in resume.skills_list %}
+      <span class="skill-tag" role="listitem">{{ skill }}</span>
+      {% empty %}
+      <p>No skills extracted.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ATS Issues -->
+{% if feedback.ats_issues %}
+<div class="card mb-3 animate-fadeInUp" aria-labelledby="ats-issues-heading">
+  <h2 class="card-title mb-3" id="ats-issues-heading"><span aria-hidden="true">🤖</span> ATS Issues</h2>
+  <ul style="list-style:none;display:flex;flex-direction:column;gap:0.4rem;" role="list">
+    {% for issue in feedback.ats_issues %}
+    <li class="flex-gap">
+      <span aria-hidden="true" style="color:var(--accent-red);">✕</span>
+      <span style="font-size:0.88rem;color:var(--text-secondary);">{{ issue }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<!-- Recommended roles -->
+{% if feedback.recommended_roles %}
+<div class="card mb-4 animate-fadeInUp" aria-labelledby="roles-heading">
+  <h2 class="card-title mb-3" id="roles-heading"><span aria-hidden="true">🎭</span> Recommended Roles</h2>
+  <div class="flex-wrap" role="list">
+    {% for role in feedback.recommended_roles %}
+    <span class="badge badge-purple" role="listitem">{{ role }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Job Match form -->
+<div class="card animate-fadeInUp" aria-labelledby="job-match-heading">
+  <h2 class="card-title mb-1" id="job-match-heading"><span aria-hidden="true">🎯</span> Match Against a Job</h2>
+  <p class="mb-3" style="font-size:0.88rem;">Paste a job description to see how well you match and what to fix.</p>
+  <form method="post" action="{% url 'job_match' resume.pk %}" data-loading>
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label" for="job_title">Job Title</label>
+      <input type="text" id="job_title" name="job_title" class="form-control" placeholder="e.g. Junior Frontend Developer">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="job_description">Job Description <span style="color:var(--accent-red);" aria-label="required">*</span></label>
+      <textarea id="job_description" name="job_description" class="form-control" rows="6" placeholder="Paste the full job description here..." required aria-required="true"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">
+      <span aria-hidden="true">⚡</span> Analyze Match
+    </button>
+  </form>
+</div>
+
+<!-- Previous Job Matches -->
+{% if job_matches %}
+<div class="card mt-3 animate-fadeInUp" aria-labelledby="matches-heading">
+  <h2 class="card-title mb-3" id="matches-heading"><span aria-hidden="true">📋</span> Previous Matches</h2>
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    {% for match in job_matches %}
+    <div style="padding:1rem;background:var(--bg-tertiary);border-radius:var(--radius-md);">
+      <div class="flex-between mb-2">
+        <strong style="color:var(--text-primary);">{{ match.job_title|default:"Untitled Job" }}</strong>
+        <span class="badge {% if match.match_score >= 80 %}badge-green{% elif match.match_score >= 60 %}badge-yellow{% else %}badge-red{% endif %}">
+          {{ match.match_score }}% match
+        </span>
+      </div>
+      {% if match.matching_skills %}
+      <div class="flex-wrap mb-1" aria-label="Matching skills">
+        {% for skill in match.matching_skills|slice:":6" %}
+        <span class="skill-tag" style="border-color:var(--accent-green);color:var(--accent-green);">✓ {{ skill }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if match.missing_skills %}
+      <div class="flex-wrap" aria-label="Missing skills">
+        {% for skill in match.missing_skills|slice:":5" %}
+        <span class="skill-tag" style="border-color:var(--accent-red);color:var(--accent-red);">✕ {{ skill }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if match.ai_analysis %}
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">{{ match.ai_analysis }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endif %}{# end status check #}
+{% endblock %}
