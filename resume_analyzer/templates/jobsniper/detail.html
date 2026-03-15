@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load resume_tags %}
+{% block title %}{{ job.title }} — {{ job.company }}{% endblock %}
+
+{% block content %}
+<div class="section-header mb-4">
+  <div>
+    <a href="{% url 'snipe_queue' %}" class="btn btn-ghost btn-sm mb-2" style="display:inline-flex;">
+      ← Back to Queue
+    </a>
+    <h1 style="font-size:1.6rem;">{{ job.title }}</h1>
+    <p style="color:var(--text-muted);font-size:0.9rem;">
+      {{ job.company }}
+      {% if job.location %} · {{ job.location }}{% endif %}
+    </p>
+  </div>
+  <!-- Score badge -->
+  <div style="text-align:center;">
+    <div class="score-ring" data-score="{{ job.relevance_score|floatformat:0|add:'0' }}"
+         aria-label="Relevance score {{ job.relevance_score }}">
+      <svg width="90" height="90" aria-hidden="true">
+        <circle cx="45" cy="45" r="38" fill="none" stroke="var(--border)" stroke-width="7"/>
+        <circle class="score-circle" cx="45" cy="45" r="38" fill="none" stroke-width="7" stroke-linecap="round"/>
+      </svg>
+      <div class="score-ring-text">
+        <div class="score-ring-value" style="font-size:1.2rem;">{{ job.relevance_score|floatformat:2 }}</div>
+        <div class="score-ring-label">score</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action bar — sticky for quick access -->
+<div style="position:sticky;top:60px;z-index:50;background:var(--bg-primary);padding:0.75rem 0;border-bottom:1px solid var(--border);margin-bottom:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;" role="toolbar" aria-label="Job actions">
+  {% if job.url %}
+  <a href="{{ job.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary"
+     aria-label="Open job posting in new tab">
+    <span aria-hidden="true">🔗</span> Open Job Posting
+  </a>
+  {% endif %}
+
+  <form method="post" action="{% url 'snipe_apply' job.id %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success"
+            aria-label="Mark this job as applied">
+      <span aria-hidden="true">✓</span> Mark Applied
+    </button>
+  </form>
+
+  <form method="post" action="{% url 'snipe_skip' job.id %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-ghost"
+            style="color:var(--text-muted);"
+            aria-label="Skip this job">
+      <span aria-hidden="true">✗</span> Skip
+    </button>
+  </form>
+
+  <form method="post" action="{% url 'snipe_regenerate' job.id %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-ghost"
+            aria-label="Regenerate cover letter with AI">
+      <span aria-hidden="true">🔄</span> Regenerate Letter
+    </button>
+  </form>
+
+  <!-- Copy cover letter button -->
+  {% if cover_letter %}
+  <button class="btn btn-ghost" data-copy="#cover-letter-text"
+          aria-label="Copy cover letter to clipboard">
+    <span aria-hidden="true">📋</span> Copy Letter
+  </button>
+  {% endif %}
+
+  <span class="badge
+    {% if job.status == 'tailored' %}badge-blue
+    {% elif job.status == 'applied' %}badge-green
+    {% elif job.status == 'queued' %}badge-yellow
+    {% elif job.status == 'skipped' %}badge-gray
+    {% else %}badge-gray{% endif %}"
+    style="margin-left:auto;">
+    {{ job.status|upper }}
+  </span>
+</div>
+
+<div class="grid-2" style="align-items:start;gap:1.5rem;">
+
+  <!-- LEFT: Job Info -->
+  <div>
+    <!-- Meta card -->
+    <div class="card mb-3 animate-fadeInUp">
+      <h2 class="card-title mb-3"><span aria-hidden="true">ℹ️</span> Job Details</h2>
+      <dl style="display:flex;flex-direction:column;gap:0.65rem;">
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Company</dt>
+          <dd style="font-weight:600;">{{ job.company }}</dd>
+        </div>
+        {% if job.location %}
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Location</dt>
+          <dd style="font-size:0.88rem;">{{ job.location }}</dd>
+        </div>
+        {% endif %}
+        {% if job.remote_type %}
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Remote</dt>
+          <dd><span class="badge badge-blue">{{ job.remote_type }}</span></dd>
+        </div>
+        {% endif %}
+        {% if job.salary_min %}
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Salary</dt>
+          <dd style="color:var(--accent-green);font-family:var(--font-mono);font-weight:600;">
+            ${{ job.salary_min|floatformat:0 }}{% if job.salary_max %} – ${{ job.salary_max|floatformat:0 }}{% endif %}
+          </dd>
+        </div>
+        {% endif %}
+        {% if job.posted_date %}
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Posted</dt>
+          <dd style="font-size:0.82rem;color:var(--text-muted);">{{ job.posted_date }}</dd>
+        </div>
+        {% endif %}
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Source</dt>
+          <dd><span class="badge badge-gray" style="text-transform:capitalize;">{{ job.source }}</span></dd>
+        </div>
+        {% if job.easy_apply %}
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Easy Apply</dt>
+          <dd><span class="badge badge-green">⚡ Available</span></dd>
+        </div>
+        {% endif %}
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Relevance</dt>
+          <dd>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <div class="progress-bar-wrap" style="width:80px;">
+                <div class="progress-bar" data-width="{{ job.relevance_score|floatformat:0|add:'0' }}"
+                     aria-valuenow="{{ job.relevance_score }}"
+                     aria-valuemin="0" aria-valuemax="1"
+                     role="progressbar"
+                     style="{% if job.relevance_score >= 0.7 %}background:var(--accent-green){% elif job.relevance_score >= 0.5 %}background:var(--accent-yellow){% else %}background:var(--accent-red){% endif %}">
+                </div>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:0.82rem;">{{ job.relevance_score|floatformat:2 }}</span>
+            </div>
+          </dd>
+        </div>
+        <div class="flex-between">
+          <dt style="font-size:0.82rem;color:var(--text-muted);">Scraped</dt>
+          <dd style="font-size:0.8rem;color:var(--text-muted);">{{ job.scraped_at|default:"—" }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Cover letter -->
+    <div class="card animate-fadeInUp animate-delay-1" aria-labelledby="cl-heading">
+      <div class="card-header mb-3">
+        <h2 class="card-title" id="cl-heading">
+          <span aria-hidden="true">✍️</span> Cover Letter
+        </h2>
+        {% if cover_letter %}
+        <span style="font-size:0.78rem;color:var(--text-muted);font-family:var(--font-mono);">
+          v{{ cover_letter.version }} · {{ cover_letter.generated_at|default:'' }}
+        </span>
+        {% endif %}
+      </div>
+
+      {% if cover_letter %}
+      <label for="cover-letter-text" class="visually-hidden">Cover letter text — editable</label>
+      <textarea
+        id="cover-letter-text"
+        class="form-control"
+        rows="16"
+        style="font-family:var(--font-sans);font-size:0.9rem;line-height:1.7;resize:vertical;"
+        aria-label="Cover letter — editable before copying">{{ cover_letter.content }}</textarea>
+      <div class="flex-gap mt-2" style="flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" data-copy="#cover-letter-text">
+          <span aria-hidden="true">📋</span> Copy to Clipboard
+        </button>
+        <form method="post" action="{% url 'snipe_regenerate' job.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-sm">
+            <span aria-hidden="true">🔄</span> Regenerate
+          </button>
+        </form>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:2rem;">
+        <div style="font-size:2rem;" aria-hidden="true">✍️</div>
+        <h3>No cover letter yet</h3>
+        <p>
+          {% if job.status == 'queued' %}
+            This job is queued. Run the tailor command or click Regenerate to generate a cover letter.
+          {% else %}
+            This job hasn't been through the tailor pipeline yet.
+          {% endif %}
+        </p>
+        <form method="post" action="{% url 'snipe_regenerate' job.id %}" style="margin-top:1rem;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">
+            <span aria-hidden="true">⚡</span> Generate Cover Letter
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RIGHT: Job Description -->
+  <div class="card animate-fadeInUp animate-delay-2" style="max-height:800px;overflow-y:auto;" aria-labelledby="desc-heading">
+    <h2 class="card-title mb-3" id="desc-heading">
+      <span aria-hidden="true">📋</span> Job Description
+    </h2>
+    {% if job.description %}
+    <div style="font-size:0.88rem;color:var(--text-secondary);line-height:1.8;white-space:pre-line;">{{ job.description }}</div>
+    {% else %}
+    <div class="empty-state" style="padding:2rem;">
+      <p>No description available. <a href="{{ job.url }}" target="_blank" rel="noopener">View on {{ job.source|title }}</a></p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Score ring uses 0-100 scale; relevance_score is 0-1 — convert
+document.querySelectorAll('.score-ring[data-score]').forEach(ring => {
+  const raw = parseFloat(ring.dataset.score) || 0;
+  // If it's already 0-1 range, multiply by 100
+  const score = raw <= 1 ? Math.round(raw * 100) : raw;
+  ring.dataset.score = score;
+});
+</script>
+{% endblock %}

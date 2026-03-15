@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load resume_tags %}
+{% block title %}Job Queue — JobSniper{% endblock %}
+
+{% block content %}
+<div class="section-header mb-3">
+  <div>
+    <h1>
+      <span aria-hidden="true">🎯</span>
+      <span class="text-gradient">JobSniper</span>
+      <span style="font-size:1rem;font-weight:400;color:var(--text-muted);font-family:var(--font-mono);margin-left:0.5rem;">// review queue</span>
+    </h1>
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-top:0.25rem;">
+      {{ total_review }} job{{ total_review|pluralize }} ready to review
+    </p>
+  </div>
+  <div class="flex-gap">
+    <form method="post" action="{% url 'snipe_pipeline' %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success btn-sm" data-tooltip="Filter + generate cover letters for new jobs">
+        <span aria-hidden="true">⚡</span> Run Pipeline
+      </button>
+    </form>
+    <a href="{% url 'snipe_stats' %}" class="btn btn-ghost btn-sm">
+      <span aria-hidden="true">📊</span> Stats
+    </a>
+  </div>
+</div>
+
+<!-- CLI hint terminal -->
+<div class="terminal mb-4 animate-fadeInUp" role="note" aria-label="CLI quick reference">
+  <div class="terminal-header">
+    <div class="terminal-dot red" aria-hidden="true"></div>
+    <div class="terminal-dot yellow" aria-hidden="true"></div>
+    <div class="terminal-dot green" aria-hidden="true"></div>
+    <span class="terminal-title">cli quick reference</span>
+  </div>
+  <div class="terminal-body">
+    <span class="prompt">$</span> python manage.py snipe pipeline
+    <span class="output">  # scrape → filter → tailor all at once</span><br>
+    <span class="prompt">$</span> python manage.py snipe scrape --source indeed
+    <span class="output">  # scrape one source</span><br>
+    <span class="prompt">$</span> python manage.py snipe tailor --job-id 42
+    <span class="output">  # generate one cover letter</span>
+  </div>
+</div>
+
+<!-- Status tab bar -->
+<div role="tablist" aria-label="Filter jobs by status" class="tab-bar animate-fadeInUp" style="margin-bottom:1.5rem;">
+  {% for tab_key, tab_label in tabs %}
+  <a href="?status={{ tab_key }}"
+     class="btn {% if active_tab == tab_key %}btn-primary{% else %}btn-ghost{% endif %} btn-sm"
+     role="tab"
+     aria-selected="{% if active_tab == tab_key %}true{% else %}false{% endif %}">
+    {{ tab_label }}
+    <span class="nav-badge">
+      {% if tab_key == 'review' %}{{ total_review }}
+      {% else %}{{ tab_counts|get_item:tab_key|default:0 }}
+      {% endif %}
+    </span>
+  </a>
+  {% endfor %}
+</div>
+
+{% if jobs %}
+<!-- Job table -->
+<div class="table-wrap animate-fadeInUp" role="region" aria-label="Job listings">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Score</th>
+        <th scope="col">Title</th>
+        <th scope="col">Company</th>
+        <th scope="col">Remote</th>
+        <th scope="col">Salary</th>
+        <th scope="col">Source</th>
+        <th scope="col">Status</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <!-- Score with colour coding -->
+        <td>
+          <span class="badge {% if job.relevance_score >= 0.7 %}badge-green{% elif job.relevance_score >= 0.5 %}badge-yellow{% else %}badge-red{% endif %}"
+                aria-label="Relevance score {{ job.relevance_score }}">
+            {{ job.relevance_score|floatformat:2 }}
+          </span>
+        </td>
+
+        <td>
+          <a href="{% url 'snipe_detail' job.id %}" style="color:var(--text-primary);font-weight:600;">
+            {{ job.title|truncatechars:45 }}
+          </a>
+          {% if job.easy_apply %}
+          <span class="badge badge-green" style="margin-left:0.4rem;" aria-label="Easy Apply available">⚡ EA</span>
+          {% endif %}
+        </td>
+
+        <td style="color:var(--text-secondary);">{{ job.company|truncatechars:30 }}</td>
+
+        <td>
+          {% if job.remote_type %}
+          <span class="badge badge-blue" style="font-size:0.7rem;">{{ job.remote_type }}</span>
+          {% else %}
+          <span style="color:var(--text-muted);font-size:0.82rem;">—</span>
+          {% endif %}
+        </td>
+
+        <td style="font-family:var(--font-mono);font-size:0.82rem;">
+          {% if job.salary_min %}
+            <span style="color:var(--accent-green);">
+              ${{ job.salary_min|floatformat:0 }}
+              {% if job.salary_max %}– ${{ job.salary_max|floatformat:0 }}{% endif %}
+            </span>
+          {% else %}
+            <span style="color:var(--text-muted);">—</span>
+          {% endif %}
+        </td>
+
+        <td>
+          <span class="badge badge-gray" style="font-size:0.7rem;text-transform:capitalize;">{{ job.source }}</span>
+        </td>
+
+        <td>
+          <span class="badge
+            {% if job.status == 'tailored' %}badge-blue
+            {% elif job.status == 'queued' %}badge-yellow
+            {% elif job.status == 'applied' %}badge-green
+            {% elif job.status == 'skipped' %}badge-gray
+            {% elif job.status == 'filtered' %}badge-red
+            {% else %}badge-gray{% endif %}">
+            {{ job.status }}
+          </span>
+        </td>
+
+        <td>
+          <div class="flex-gap">
+            <a href="{% url 'snipe_detail' job.id %}" class="btn btn-ghost btn-sm"
+               aria-label="View details for {{ job.title }}">View</a>
+            <form method="post" action="{% url 'snipe_skip' job.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm"
+                      style="color:var(--text-muted);"
+                      aria-label="Skip {{ job.title }} at {{ job.company }}">Skip</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+<div class="empty-state card animate-fadeInUp">
+  <div class="empty-state-icon" aria-hidden="true">🎯</div>
+  <h2>{{ active_tab|title }} queue is empty</h2>
+  <p>
+    {% if active_tab == 'review' %}
+      Run the scraper to pull in new jobs, then run the pipeline to score and generate cover letters.
+    {% else %}
+      No jobs with status "{{ active_tab }}" yet.
+    {% endif %}
+  </p>
+  <div class="flex-gap" style="justify-content:center;margin-top:1rem;flex-wrap:wrap;">
+    <form method="post" action="{% url 'snipe_pipeline' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary">
+        <span aria-hidden="true">⚡</span> Run Pipeline
+      </button>
+    </form>
+    <a href="?status=all" class="btn btn-ghost">View All Jobs</a>
+  </div>
+  <div class="terminal mt-3" style="text-align:left;max-width:460px;">
+    <div class="terminal-header">
+      <div class="terminal-dot green"></div>
+      <span class="terminal-title">get started</span>
+    </div>
+    <div class="terminal-body" style="font-size:0.78rem;">
+      <span class="prompt">$</span> python manage.py snipe scrape<br>
+      <span class="output">→ scrapes Indeed, LinkedIn, Wellfound</span><br>
+      <span class="prompt">$</span> python manage.py snipe filter<br>
+      <span class="output">→ scores and ranks all new jobs</span><br>
+      <span class="prompt">$</span> python manage.py snipe tailor<br>
+      <span class="output">→ generates AI cover letters</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Re-activate tab highlight on resume
+document.querySelectorAll('[role="tab"]').forEach(tab => {
+  if (tab.getAttribute('aria-selected') === 'true') {
+    tab.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+});
+</script>
+{% endblock %}

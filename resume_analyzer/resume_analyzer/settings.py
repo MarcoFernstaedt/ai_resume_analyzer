@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'resumes',
     'assessments',
     'companies',
+    'jobsniper',
 ]
 
 MIDDLEWARE = [
@@ -89,3 +90,17 @@ ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 # File upload limits (10MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+# JobSniper settings
+JOBSNIPER_DB_PATH = os.environ.get(
+    'DATABASE_PATH',
+    str(BASE_DIR.parent / 'data' / 'jobsniper.db')
+)
+JOBSNIPER_CONFIG_PATH = os.environ.get(
+    'CONFIG_PATH',
+    str(BASE_DIR.parent / 'config.yaml')
+)
+JOBSNIPER_RESUME_PATH = os.environ.get(
+    'RESUME_PATH',
+    str(BASE_DIR.parent / 'data' / 'resume.txt')
+)

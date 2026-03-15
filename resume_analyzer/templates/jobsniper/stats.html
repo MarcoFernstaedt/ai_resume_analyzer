@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load resume_tags %}
+{% block title %}Stats — JobSniper{% endblock %}
+
+{% block content %}
+<div class="section-header mb-4">
+  <div>
+    <h1><span class="text-gradient">JobSniper</span> — Stats</h1>
+    <p style="color:var(--text-muted);">Your application pipeline at a glance</p>
+  </div>
+  <a href="{% url 'snipe_queue' %}" class="btn btn-ghost btn-sm">← Queue</a>
+</div>
+
+<!-- Main stat grid -->
+<div class="stat-grid mb-4">
+  <div class="stat-card blue animate-fadeInUp" aria-label="{{ stats.total }} total jobs scraped">
+    <div class="stat-icon" aria-hidden="true">🔍</div>
+    <div class="stat-value" data-count="{{ stats.total }}">{{ stats.total }}</div>
+    <div class="stat-label">Total Scraped</div>
+  </div>
+  <div class="stat-card orange animate-fadeInUp animate-delay-1" aria-label="{{ stats.filtered }} jobs filtered out">
+    <div class="stat-icon" aria-hidden="true">🚫</div>
+    <div class="stat-value" data-count="{{ stats.filtered }}">{{ stats.filtered }}</div>
+    <div class="stat-label">Filtered Out</div>
+  </div>
+  <div class="stat-card yellow animate-fadeInUp animate-delay-2" aria-label="{{ stats.queued }} jobs in queue">
+    <div class="stat-icon" aria-hidden="true">📥</div>
+    <div class="stat-value" data-count="{{ stats.queued }}">{{ stats.queued }}</div>
+    <div class="stat-label">In Queue</div>
+  </div>
+  <div class="stat-card blue animate-fadeInUp animate-delay-2" aria-label="{{ stats.tailored }} cover letters generated">
+    <div class="stat-icon" aria-hidden="true">✍️</div>
+    <div class="stat-value" data-count="{{ stats.tailored }}">{{ stats.tailored }}</div>
+    <div class="stat-label">Tailored</div>
+  </div>
+  <div class="stat-card green animate-fadeInUp animate-delay-3" aria-label="{{ stats.applied }} jobs applied">
+    <div class="stat-icon" aria-hidden="true">✅</div>
+    <div class="stat-value" data-count="{{ stats.applied }}">{{ stats.applied }}</div>
+    <div class="stat-label">Applied</div>
+  </div>
+  <div class="stat-card purple animate-fadeInUp animate-delay-3" aria-label="{{ stats.cover_letters_total }} cover letters generated">
+    <div class="stat-icon" aria-hidden="true">📝</div>
+    <div class="stat-value" data-count="{{ stats.cover_letters_total }}">{{ stats.cover_letters_total }}</div>
+    <div class="stat-label">Cover Letters</div>
+  </div>
+</div>
+
+<div class="grid-2 mb-4">
+
+  <!-- Application velocity -->
+  <div class="card animate-fadeInUp">
+    <h2 class="card-title mb-3"><span aria-hidden="true">📈</span> Application Velocity</h2>
+    <div style="display:flex;flex-direction:column;gap:1.2rem;">
+      <div>
+        <div class="flex-between mb-1">
+          <span style="font-size:0.88rem;color:var(--text-secondary);">Applied Today</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--accent-green);">{{ stats.applied_today }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar green" data-width="{% if stats.applied_today > 0 %}100{% else %}0{% endif %}"
+               role="progressbar" aria-valuenow="{{ stats.applied_today }}"></div>
+        </div>
+      </div>
+      <div>
+        <div class="flex-between mb-1">
+          <span style="font-size:0.88rem;color:var(--text-secondary);">Applied This Week</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--accent-blue);">{{ stats.applied_week }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" data-width="{% widthratio stats.applied_week 20 100 %}"
+               role="progressbar" aria-valuenow="{{ stats.applied_week }}"></div>
+        </div>
+        <p class="form-hint">Goal: 20 applications/week</p>
+      </div>
+      <div>
+        <div class="flex-between mb-1">
+          <span style="font-size:0.88rem;color:var(--text-secondary);">Avg Score (Applied)</span>
+          <span style="font-family:var(--font-mono);font-weight:700;">{{ stats.avg_score_applied }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar {% if stats.avg_score_applied >= 0.7 %}green{% elif stats.avg_score_applied >= 0.5 %}{% else %}red{% endif %}"
+               data-width="{% widthratio stats.avg_score_applied 1 100 %}"
+               role="progressbar" aria-valuenow="{{ stats.avg_score_applied }}"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- By source -->
+  <div class="card animate-fadeInUp animate-delay-1">
+    <h2 class="card-title mb-3"><span aria-hidden="true">🔍</span> Jobs by Source</h2>
+    {% if stats.sources %}
+    <div style="display:flex;flex-direction:column;gap:0.9rem;">
+      {% for source, count in stats.sources.items %}
+      <div>
+        <div class="flex-between mb-1">
+          <span style="font-size:0.88rem;color:var(--text-secondary);text-transform:capitalize;">{{ source }}</span>
+          <span style="font-family:var(--font-mono);font-size:0.85rem;">{{ count }}</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar"
+               data-width="{% widthratio count stats.total 100 %}"
+               role="progressbar"
+               aria-label="{{ count }} jobs from {{ source }}"
+               aria-valuenow="{{ count }}" aria-valuemax="{{ stats.total }}"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-muted);">No data yet. Run the scraper first.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Status pipeline flow -->
+<div class="card mb-4 animate-fadeInUp" aria-labelledby="pipeline-heading">
+  <h2 class="card-title mb-3" id="pipeline-heading"><span aria-hidden="true">🚀</span> Pipeline Status</h2>
+  <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;" role="list" aria-label="Pipeline stages">
+    {% for stage_key, stage_label, stage_color in pipeline_stages %}
+    <div role="listitem" style="text-align:center;min-width:90px;">
+      <div class="badge badge-{{ stage_color }}" style="display:block;padding:0.4rem 0.75rem;margin-bottom:0.3rem;font-size:0.8rem;">
+        {{ stage_label }}
+      </div>
+      <div style="font-family:var(--font-mono);font-size:1.1rem;font-weight:700;color:var(--text-primary);">
+        {{ stats.by_status|get_item:stage_key|default:0 }}
+      </div>
+    </div>
+    {% if not forloop.last %}
+    <span aria-hidden="true" style="color:var(--text-muted);font-size:1.2rem;">→</span>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Top companies -->
+{% if stats.top_companies %}
+<div class="card animate-fadeInUp" aria-labelledby="top-cos-heading">
+  <h2 class="card-title mb-3" id="top-cos-heading"><span aria-hidden="true">🏢</span> Top Companies Applied To</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Company</th>
+          <th scope="col">Applications</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for co in stats.top_companies %}
+        <tr>
+          <td style="font-weight:600;color:var(--text-primary);">{{ co.company }}</td>
+          <td><span class="badge badge-green">{{ co.n }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

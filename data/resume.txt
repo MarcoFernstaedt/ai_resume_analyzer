@@ -1,0 +1,38 @@
+Marco Fernstaedt
+Phoenix, AZ | marco@example.com | github.com/MarcoFernstaedt | linkedin.com/in/marcofernstaedt
+
+PROFESSIONAL SUMMARY
+Junior Full Stack Developer with hands-on experience building responsive web applications using React, JavaScript, and Node.js. Passionate about clean code, great UX, and shipping products that solve real problems. Seeking a remote or Phoenix-area frontend/full-stack role.
+
+TECHNICAL SKILLS
+Languages: JavaScript (ES6+), TypeScript, Python, HTML5, CSS3
+Frontend: React, Next.js, Tailwind CSS, Redux, React Router
+Backend: Node.js, Express, Django, FastAPI
+Databases: MongoDB, PostgreSQL, SQLite
+Tools: Git, GitHub, Docker, VS Code, Figma, Postman
+Cloud: AWS (S3, EC2 basics), Vercel, Netlify
+
+PROJECTS
+AI Resume Analyzer | React, Django, Python, Claude API (2024)
+- Built a full-stack web app that analyzes resumes using Claude AI, providing scores across ATS compatibility, impact, and readability
+- Integrated PDF/DOCX parsing with pdfplumber and python-docx for text extraction
+- Designed responsive dark-theme UI with WCAG 2.1 accessibility compliance
+- Implemented skill assessment engine generating AI-powered technical questions
+
+Task Management App | React, Node.js, MongoDB, Socket.io (2024)
+- Developed a real-time collaborative task board with drag-and-drop functionality
+- Used Socket.io for live updates across multiple browser sessions
+- Built REST API with Express and JWT authentication
+- Deployed on AWS EC2 with Nginx reverse proxy
+
+Portfolio Website | Next.js, Tailwind CSS (2023)
+- Designed and built personal portfolio with 95+ Lighthouse performance score
+- Implemented dynamic project filtering and smooth scroll animations
+
+EDUCATION
+Associate of Applied Science, Computer Information Systems
+Mesa Community College, Mesa AZ | 2022
+
+CERTIFICATIONS
+- freeCodeCamp: Responsive Web Design (2022)
+- freeCodeCamp: JavaScript Algorithms and Data Structures (2022)

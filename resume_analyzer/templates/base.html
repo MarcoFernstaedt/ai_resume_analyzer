@@ -123,6 +123,20 @@
         </a>
       </div>
 
+      <div class="nav-section">
+        <div class="nav-label" style="display:flex;align-items:center;gap:0.4rem;">
+          <span>JobSniper</span>
+          <span style="background:linear-gradient(90deg,#C9A84C,#f0c060);color:#000;font-size:0.6rem;padding:1px 5px;border-radius:8px;font-weight:700;letter-spacing:0.05em;">AUTO</span>
+        </div>
+        <a href="{% url 'snipe_queue' %}" class="nav-item {% if 'snipe' in request.resolver_match.url_name %}active{% endif %}"
+           aria-label="Job Sniper review queue">
+          <span class="nav-icon" aria-hidden="true">🎯</span> Review Queue
+        </a>
+        <a href="{% url 'snipe_stats' %}" class="nav-item {% if request.resolver_match.url_name == 'snipe_stats' %}active{% endif %}">
+          <span class="nav-icon" aria-hidden="true">📊</span> Pipeline Stats
+        </a>
+      </div>
+
       <!-- Bottom status -->
       <div style="padding: 1rem; margin-top: auto; border-top: 1px solid var(--border);">
         <div class="terminal" style="font-size:0.72rem;">

@@ -1,0 +1,71 @@
+profile:
+  name: "Marco Fernstaedt"
+  target_titles:
+    - "Frontend Developer"
+    - "Full Stack Developer"
+    - "React Developer"
+    - "JavaScript Developer"
+    - "Software Engineer"
+    - "Web Developer"
+  must_have_skills:
+    - "React"
+    - "JavaScript"
+  nice_to_have_skills:
+    - "Next.js"
+    - "Node.js"
+    - "TypeScript"
+    - "TailwindCSS"
+    - "MongoDB"
+    - "PostgreSQL"
+    - "Python"
+    - "Socket.io"
+  exclude_keywords:
+    - "Senior"
+    - "Staff"
+    - "Lead"
+    - "Principal"
+    - "10+ years"
+    - "8+ years"
+    - "7+ years"
+    - "clearance required"
+  remote_preference: "remote"
+  locations:
+    - "Phoenix"
+    - "Scottsdale"
+    - "Remote"
+  min_salary: 60000
+  max_experience_years: 4
+
+search:
+  linkedin:
+    enabled: true
+    queries:
+      - "React Developer remote"
+      - "Frontend Developer remote"
+      - "Full Stack JavaScript remote"
+    pages_per_query: 3
+    easy_apply_only: true
+  wellfound:
+    enabled: true
+    queries:
+      - "Frontend Engineer"
+      - "Full Stack Developer"
+    pages_per_query: 2
+  indeed:
+    enabled: true
+    queries:
+      - "React Developer remote"
+      - "Junior Full Stack Developer remote"
+    pages_per_query: 3
+
+scraping:
+  headless: true
+  delay_between_pages_seconds: 3
+  delay_between_requests_seconds: 1
+  max_jobs_per_run: 100
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+tailor:
+  model: "claude-sonnet-4-20250514"
+  max_tokens: 600
+  temperature: 0.7
